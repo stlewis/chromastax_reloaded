@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Chromastax</title>
+    <meta name="description" content="ES6 Boilerplate">
+    <script src='./build/bundle.js'></script>
+  </head>
+  <body>
+    <a-scene logic-controller environment='preset: starry;'>
+      <a-assets>
+        <img id='platform-floor' src='./textures/metal-plate.jpg'>
+      </a-assets>
+      <a-mixin id='logo-font'
+               text="shader: msdf;
+                     font:https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/fredokaone/FredokaOne-Regular.json;
+                     width: 20;"></a-mixin>
+
+      <a-entity id='riser' position='0 15 0'>
+
+        <a-entity id='rig' game-controls position='0 0 0'>
+          <a-entity camera look-controls='pointerLockEnabled: true;' position='0 1.6 0'></a-entity>
+        </a-entity>
+
+
+        <a-entity position='2.5 2 -4.5' template='src: ./src/templates/logo.html'></a-entity>
+        <a-entity id='the-stage' template='src: ./src/templates/stage.html'></a-entity>
+
+      </a-entity>
+
+
+
+    </a-scene>
+  </body>
+</html>

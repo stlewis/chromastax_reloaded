@@ -1,0 +1,40 @@
+{
+  "name": "chromastax-vr",
+  "description": "WebVR puzzle/arcade game",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "live-server --port=8080",
+    "deploy": "ghpages",
+    "build": "browserify index.js -o build/bundle.js -t [ babelify --presets [ @babel/preset-env ] ]",
+    "watch": "watchify index.js -o build/bundle.js -t [ babelify --presets [ @babel/preset-env ] ]",
+    "release": "browserify index.js -t [ babelify --presets [ @babel/preset-env ] ] | uglifyjs > build/bundle.min.js"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "babel-preset-env": "^1.7.0",
+    "babelify": "^10.0.0",
+    "browserify": "^16.2.3",
+    "ghpages": "0.0.10",
+    "live-server": "^1.2.1",
+    "uglify-es": "^3.3.9",
+    "watchify": "^3.11.0"
+  },
+  "keywords": [
+    "aframe",
+    "aframe-example",
+    "aframe-boilerplate",
+    "aframe-scene",
+    "webvr",
+    "vr"
+  ],
+  "dependencies": {
+    "aframe": "^0.9.2",
+    "aframe-state-component": "^6.8.0",
+    "aframe-environment-component": "^2.0.0",
+    "aframe-template-component": "^3.2.1",
+    "aframe-layout-component": "^5.3.0",
+    "aframe-gui": "^0.3.8"
+  }
+}

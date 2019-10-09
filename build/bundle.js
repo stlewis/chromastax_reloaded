@@ -88587,7 +88587,7 @@ AFRAME.registerComponent('chromastack', {
   init: function init() {
     this.state = this.el.sceneEl.systems.state.state;
     this.throttledAdd = AFRAME.utils.throttle(this.addOrb, this.data.sphereTimer, this);
-    this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this)); //this.el.sceneEl.addEventListener('animationcomplete', this.removeMarkedObjects.bind(this))
+    this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this));
   },
   testAnimation: function testAnimation(e) {
     console.log(e.detail);
@@ -88643,7 +88643,7 @@ AFRAME.registerComponent('chromastack', {
       var orbY = objectOffset + 0.5 + 0.5 * i;
       currentOrb.setAttribute('animation', {
         property: 'position',
-        dur: 1000,
+        dur: 500,
         to: {
           x: orbPos.x,
           y: orbY,
@@ -88736,17 +88736,17 @@ AFRAME.registerComponent('chromastack', {
 
       _orb.setAttribute('animation__shrinkOrbs', {
         property: 'position',
-        dur: 1000,
+        dur: 500,
         to: positionTo
       });
 
       this.removeMarkedObjects();
-    } //const removeSound = document.querySelector('#remove-sound');
-    //removeSound.components.sound.playSound();
+    }
 
+    var removeSound = document.querySelector('#remove-sound');
+    removeSound.components.sound.playSound();
   },
   removeMarkedObjects: function removeMarkedObjects(e) {
-    //if(e.detail.name != "animation__shrinkOrbs") return false
     var toRemove = document.querySelectorAll('[matched]');
 
     for (var i = 0; i < toRemove.length; i++) {

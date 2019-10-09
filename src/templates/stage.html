@@ -4,10 +4,10 @@
 
   <a-entity id='platform1' portal class='platform' geometry='primitive: circle; radius: 0.5'  material='color: black; emissive: #ffffff; emissiveIntensity: 0.2'>
     <a-gui-flex-container id='level-panel-front' position='-0.604 0.591 0' rotation='0 0 -90'>
-      <a-text position='0.4 0 0' color='#FFFFFF'  width='3' text="value: Level 1"></a-text>
+      <a-text position='0.4 0 0' color='#FFFFFF'  width='3' bind__text="value: levelData.levelName"></a-text>
       <a-entity position='0.4 -0.12 0'>
         <a-text position='0 0 0' color='#FFFFFF'  width='3' text="value: Score:"></a-text>
-        <a-text position='0.4 0 0' color='#FFFFFF'  width='3' text="value: 0"></a-text>
+        <a-text position='0.4 0 0' color='#FFFFFF'  width='3' bind__text="value: score"></a-text>
       </a-entity>
     </a-gui-flex-container>
   </a-entity>
@@ -17,10 +17,10 @@
 
   <a-entity id='platform4' portal rotation='0 0 90' class='platform' geometry='primitive: circle; radius: 0.5'  material='color: black; emissive: #ffffff; emissiveIntensity: 0.2'>
     <a-gui-flex-container id='level-panel-front' position='-0.604 0.591 0' rotation='0 0 -90'>
-      <a-text position='0.4 0 0' color='#FFFFFF'  width='3' text="value: Level 1"></a-text>
+      <a-text position='0.4 0 0' color='#FFFFFF'  width='3' bind__text="value: levelData.levelName"></a-text>
       <a-entity position='0.4 -0.12 0'>
         <a-text position='0 0 0' color='#FFFFFF'  width='3' text="value: Score:"></a-text>
-        <a-text position='0.4 0 0' color='#FFFFFF'  width='3' text="value: 0"></a-text>
+        <a-text position='0.4 0 0' color='#FFFFFF'  width='3' bind__text="value: score"></a-text>
       </a-entity>
     </a-gui-flex-container>
   </a-entity>
@@ -29,10 +29,10 @@
   <a-entity id='platform6' portal class='platform' geometry='primitive: circle; radius: 0.5'  material='color: black; emissive: #ffffff; emissiveIntensity: 0.2'></a-entity>
   <a-entity id='platform7' portal rotation='0 0 -180' class='platform' geometry='primitive: circle; radius: 0.5'  material='color: black; emissive: #ffffff; emissiveIntensity: 0.2'>
     <a-gui-flex-container id='level-panel-front' position='-0.604 0.591 0' rotation='0 0 -90'>
-      <a-text position='0.4 0 0' color='#FFFFFF'  width='3' text="value: Level 1"></a-text>
+      <a-text position='0.4 0 0' color='#FFFFFF'  width='3' bind__text="value: levelData.levelName"></a-text>
       <a-entity position='0.4 -0.12 0'>
         <a-text position='0 0 0' color='#FFFFFF'  width='3' text="value: Score:"></a-text>
-        <a-text position='0.4 0 0' color='#FFFFFF'  width='3' text="value: 0"></a-text>
+        <a-text position='0.4 0 0' color='#FFFFFF'  width='3' bind__text="value: score"></a-text>
       </a-entity>
     </a-gui-flex-container>
   </a-entity>
@@ -41,10 +41,10 @@
 
   <a-entity id='platform10' portal rotation='0 0 -90' class='platform' geometry='primitive: circle; radius: 0.5'  material='color: black; emissive: #ffffff; emissiveIntensity: 0.2'>
     <a-gui-flex-container id='level-panel-front' position='-0.604 0.591 0' rotation='0 0 -90'>
-      <a-text position='0.4 0 0' color='#FFFFFF'  width='3' text="value: Level 1"></a-text>
+      <a-text position='0.4 0 0' color='#FFFFFF'  width='3' bind__text="value: levelData.levelName"></a-text>
       <a-entity position='0.4 -0.12 0'>
         <a-text position='0 0 0' color='#FFFFFF'  width='3' text="value: Score:"></a-text>
-        <a-text position='0.4 0 0' color='#FFFFFF'  width='3' text="value: 0"></a-text>
+        <a-text position='0.4 0 0' color='#FFFFFF'  width='3' bind__text="value: score"></a-text>
       </a-entity>
     </a-gui-flex-container>
   </a-entity>

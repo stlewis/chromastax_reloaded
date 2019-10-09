@@ -25,7 +25,9 @@ require('./src/components/orb-picker.js');
 
 require('./src/components/game-controls.js');
 
-},{"./src/components/chromastack.js":79,"./src/components/game-controls.js":80,"./src/components/logic-controller.js":81,"./src/components/orb-picker.js":82,"./src/components/portal.js":83,"./src/state.js":84,"aframe":25,"aframe-environment-component":2,"aframe-gui":19,"aframe-layout-component":22,"aframe-state-component":23,"aframe-template-component":24}],2:[function(require,module,exports){
+require('./src/components/game-starter.js');
+
+},{"./src/components/chromastack.js":79,"./src/components/game-controls.js":80,"./src/components/game-starter.js":81,"./src/components/logic-controller.js":82,"./src/components/orb-picker.js":83,"./src/components/portal.js":84,"./src/state.js":85,"aframe":25,"aframe-environment-component":2,"aframe-gui":19,"aframe-layout-component":22,"aframe-state-component":23,"aframe-template-component":24}],2:[function(require,module,exports){
 /* global AFRAME, THREE */
 
 if (typeof AFRAME === 'undefined') {
@@ -88585,74 +88587,35 @@ AFRAME.registerComponent('chromastack', {
   init: function init() {
     this.state = this.el.sceneEl.systems.state.state;
     this.throttledAdd = AFRAME.utils.throttle(this.addOrb, this.data.sphereTimer, this);
-    this.shapeParams = {
-      box: {
-        primitive: 'box',
-        width: 0.4,
-        height: 0.4,
-        depth: 0.4
-      },
-      cone: {
-        primitive: 'cone',
-        radiusBottom: 0.25,
-        radiusTop: 0,
-        height: 0.4
-      },
-      octahedron: {
-        primitive: 'octahedron',
-        radius: 0.28
-      },
-      sphere: {
-        primitive: 'sphere',
-        radius: 0.25,
-        segmentsHeight: 9,
-        segmentsWidth: 18
-      },
-      tetrahedron: {
-        primitive: 'tetrahedron',
-        radius: 0.4
-      },
-      dodecahedron: {
-        primitive: 'dodecahedron',
-        radius: 0.25
-      }
-    };
-    this.shapeColors = {
-      box: 'blue',
-      cone: 'yellow',
-      sphere: 'purple',
-      tetrahedron: 'orange',
-      octahedron: 'green',
-      cylinder: 'red',
-      dodecahedron: 'pink'
-    };
-    this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this));
-    this.el.addEventListener('animationcomplete', this.removeMarkedObjects.bind(this));
+    this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this)); //this.el.sceneEl.addEventListener('animationcomplete', this.removeMarkedObjects.bind(this))
+  },
+  testAnimation: function testAnimation(e) {
+    console.log(e.detail);
   },
   tick: function tick() {
     this._removeAdjacentOrbs();
 
-    this.throttledAdd();
+    if (this.getOrbs().length <= 5) {
+      this.throttledAdd();
+    }
   },
   handleOrbSwap: function handleOrbSwap() {
     this._removeAdjacentOrbs();
   },
   createOrb: function createOrb(shape) {
+    var referenceEntitySelector = '#' + shape + '-template';
+    var referenceEntity = document.querySelector(referenceEntitySelector);
     var orb = document.createElement('a-entity');
     orb.setAttribute('class', 'orb ' + shape);
     orb.setAttribute('data-clickable', {});
-    orb.setAttribute('geometry', this.shapeParams[shape]);
+    orb.setAttribute('data-orb', {});
+    orb.setAttribute('geometry', referenceEntity.getAttribute('geometry'));
     orb.setAttribute('position', {
       x: 0,
       y: -0.6,
       z: 0
     });
-    orb.setAttribute('material', {
-      color: this.shapeColors[shape],
-      metalness: 0.5,
-      roughness: 0.2,
-      opacity: 1
-    });
+    orb.setAttribute('material', referenceEntity.getAttribute('material'));
     return orb;
   },
   addOrb: function addOrb(shape) {
@@ -88708,15 +88671,15 @@ AFRAME.registerComponent('chromastack', {
         continue;
       }
 
-      var currentOrbPrimitive = orbs[i].getAttribute('geometry').primitive;
+      var currentOrbGeoType = orbs[i].getObject3D('mesh').geometry.metadata.type;
       var lastAdjacent = currentlyAdjacent[currentlyAdjacent.length - 1];
-      var lastAdjacentPrimitive = null;
+      var lastAdjacentGeoType = null;
 
       if (lastAdjacent) {
-        lastAdjacentPrimitive = lastAdjacent.getAttribute('geometry').primitive;
+        lastAdjacentGeoType = lastAdjacent.getObject3D('mesh').geometry.metadata.type;
       }
 
-      if (currentOrbPrimitive == lastAdjacentPrimitive) {
+      if (currentOrbGeoType == lastAdjacentGeoType) {
         currentlyAdjacent.push(orbs[i]);
 
         if (currentlyAdjacent.length >= 5) {
@@ -88758,10 +88721,12 @@ AFRAME.registerComponent('chromastack', {
     var orbs = this.getOrbs();
 
     for (var a = 0; a < orbs.length; a++) {
+      console.log("What da heck?");
       var _orb = orbs[a];
 
       var currentPos = _orb.getAttribute('position');
 
+      var threePos = _orb.object3D.position;
       var newY = 0.54 * a + 0.54;
       var positionTo = {
         x: currentPos.x,
@@ -88774,13 +88739,14 @@ AFRAME.registerComponent('chromastack', {
         dur: 1000,
         to: positionTo
       });
-    }
 
-    var removeSound = document.querySelector('#remove-sound');
-    removeSound.components.sound.playSound();
+      this.removeMarkedObjects();
+    } //const removeSound = document.querySelector('#remove-sound');
+    //removeSound.components.sound.playSound();
+
   },
   removeMarkedObjects: function removeMarkedObjects(e) {
-    if (e.detail.name != "animation__shrinkOrbs") return false;
+    //if(e.detail.name != "animation__shrinkOrbs") return false
     var toRemove = document.querySelectorAll('[matched]');
 
     for (var i = 0; i < toRemove.length; i++) {
@@ -88789,7 +88755,7 @@ AFRAME.registerComponent('chromastack', {
     }
   },
   getOrbs: function getOrbs() {
-    var orbs = Array.from(this.el.querySelectorAll('[data-clickable]'));
+    var orbs = Array.from(this.el.querySelectorAll('[data-orb]'));
     return orbs;
   }
 });
@@ -88871,6 +88837,18 @@ AFRAME.registerComponent('game-controls', {
 },{}],81:[function(require,module,exports){
 "use strict";
 
+AFRAME.registerComponent('game-starter', {
+  init: function init() {
+    this.el.addEventListener('click', this.startGame.bind(this));
+  },
+  startGame: function startGame() {
+    this.el.sceneEl.emit('gameStart');
+  }
+});
+
+},{}],82:[function(require,module,exports){
+"use strict";
+
 /*
  * The logic-controller component is responsible for controlling the 'flow'
  * of the game. It starts and ends a game and handles any updates required
@@ -88879,9 +88857,9 @@ AFRAME.registerComponent('game-controls', {
 AFRAME.registerComponent('logic-controller', {
   init: function init() {
     this.state = this.el.sceneEl.systems.state.state;
-    document.querySelector('#game-start-button').addEventListener('click', this.startGame.bind(this));
     this.el.addEventListener('levelChanged', this.refreshUI.bind(this));
     this.el.addEventListener('gameOver', this.endGame.bind(this));
+    this.el.sceneEl.addEventListener('gameStart', this.startGame.bind(this));
   },
   startGame: function startGame() {
     console.log("Ready Player One!");
@@ -89059,7 +89037,7 @@ AFRAME.registerComponent('logic-controller', {
   }
 });
 
-},{}],82:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerComponent('orb-picker', {
@@ -89090,14 +89068,16 @@ AFRAME.registerComponent('orb-picker', {
   },
   swapOrbs: function swapOrbs() {
     if (!this.firstOrb || !this.secondOrb) return false;
-    var firstOrbColor = this.firstOrb.getAttribute('material').color;
-    var secondOrbColor = this.secondOrb.getAttribute('material').color;
-    var firstOrbGeo = this.firstOrb.getAttribute('geometry');
-    var secondOrbGeo = this.secondOrb.getAttribute('geometry');
-    this.firstOrb.setAttribute('material', 'color', secondOrbColor);
-    this.secondOrb.setAttribute('material', 'color', firstOrbColor);
-    this.firstOrb.setAttribute('geometry', secondOrbGeo, true);
-    this.secondOrb.setAttribute('geometry', firstOrbGeo, true); // Play the swap sound
+    var firstOrbKind = this.firstOrb.getAttribute('geometry').primitive;
+    var secondOrbKind = this.secondOrb.getAttribute('geometry').primitive;
+    var firstOrbReferenceSelector = "#" + firstOrbKind + '-template';
+    var secondOrbReferenceSelector = "#" + secondOrbKind + '-template';
+    var firstOrbReference = document.querySelector(firstOrbReferenceSelector);
+    var secondOrbReference = document.querySelector(secondOrbReferenceSelector);
+    this.firstOrb.setAttribute('material', secondOrbReference.getAttribute('material'));
+    this.secondOrb.setAttribute('material', firstOrbReference.getAttribute('material'));
+    this.firstOrb.setAttribute('geometry', secondOrbReference.getAttribute('geometry'));
+    this.secondOrb.setAttribute('geometry', firstOrbReference.getAttribute('geometry')); // Play the swap sound
 
     var swapSound = document.querySelector('#move-sound');
     swapSound.components.sound.playSound(); // Let the stacks know an orb swap has occurred
@@ -89169,14 +89149,10 @@ AFRAME.registerComponent('orb-picker', {
     if (bounding) bounding.parentNode.removeChild(bounding);
     this.firstOrb = null;
     this.secondOrb = null;
-  },
-  getOrbs: function getOrbs(stack) {
-    var orbs = Array.from(stack.el.children);
-    return orbs;
   }
 });
 
-},{}],83:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerComponent('portal', {
@@ -89218,7 +89194,7 @@ AFRAME.registerComponent('portal', {
   }
 });
 
-},{}],84:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerState({

@@ -9,9 +9,9 @@ AFRAME.registerComponent('logic-controller', {
   init: function() {
     this.state = this.el.sceneEl.systems.state.state;
 
-    document.querySelector('#game-start-button').addEventListener('click', this.startGame.bind(this));
     this.el.addEventListener('levelChanged', this.refreshUI.bind(this));
     this.el.addEventListener('gameOver', this.endGame.bind(this));
+    this.el.sceneEl.addEventListener('gameStart', this.startGame.bind(this));
   },
 
   startGame: function() {

@@ -10,32 +10,19 @@ AFRAME.registerComponent('chromastack', {
 
     this.throttledAdd = AFRAME.utils.throttle(this.addOrb, this.data.sphereTimer, this)
 
-    this.shapeParams = {
-      box:          { primitive: 'box', width: 0.4, height: 0.4, depth: 0.4 },
-      cone:         { primitive: 'cone', radiusBottom: 0.25, radiusTop: 0, height: 0.4 },
-      octahedron:   { primitive: 'octahedron', radius: 0.28 },
-      sphere:       { primitive: 'sphere', radius: 0.25, segmentsHeight: 9, segmentsWidth: 18 },
-      tetrahedron:  { primitive: 'tetrahedron', radius: 0.4 },
-      dodecahedron: { primitive: 'dodecahedron', radius: 0.25 }
-    }
-
-    this.shapeColors = {
-      box:          'blue',
-      cone:         'yellow',
-      sphere:       'purple',
-      tetrahedron:  'orange',
-      octahedron:   'green',
-      cylinder:     'red',
-      dodecahedron: 'pink',
-    }
-
     this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this));
-    this.el.addEventListener('animationcomplete', this.removeMarkedObjects.bind(this))
+    //this.el.sceneEl.addEventListener('animationcomplete', this.removeMarkedObjects.bind(this))
+  },
+
+  testAnimation: function(e) {
+    console.log(e.detail)
   },
 
   tick: function() {
     this._removeAdjacentOrbs();
-    this.throttledAdd()
+    if(this.getOrbs().length <= 5) {
+      this.throttledAdd()
+    }
   },
 
   handleOrbSwap: function() {
@@ -43,13 +30,19 @@ AFRAME.registerComponent('chromastack', {
   },
 
   createOrb: function(shape) {
+    let referenceEntitySelector = '#' + shape + '-template'
+    let referenceEntity = document.querySelector(referenceEntitySelector)
+
+
+
     const orb = document.createElement('a-entity');
     orb.setAttribute('class', 'orb ' + shape);
     orb.setAttribute('data-clickable', {});
-    orb.setAttribute('geometry', this.shapeParams[shape]);
+    orb.setAttribute('data-orb', {});
+    orb.setAttribute('geometry', referenceEntity.getAttribute('geometry'));
     orb.setAttribute('position', {x: 0, y: -0.6, z: 0});
 
-    orb.setAttribute('material', {color: this.shapeColors[shape], metalness: 0.5, roughness: 0.2, opacity: 1});
+    orb.setAttribute('material', referenceEntity.getAttribute('material'));
 
     return orb
   },
@@ -100,15 +93,15 @@ AFRAME.registerComponent('chromastack', {
         continue;
       }
 
-      let currentOrbPrimitive   = orbs[i].getAttribute('geometry').primitive;
+      let currentOrbGeoType     = orbs[i].getObject3D('mesh').geometry.metadata.type;
       let lastAdjacent          = currentlyAdjacent[currentlyAdjacent.length - 1];
-      let lastAdjacentPrimitive = null;
+      let lastAdjacentGeoType   = null;
 
       if(lastAdjacent){
-        lastAdjacentPrimitive = lastAdjacent.getAttribute('geometry').primitive;
+        lastAdjacentGeoType = lastAdjacent.getObject3D('mesh').geometry.metadata.type;
       }
 
-      if(currentOrbPrimitive == lastAdjacentPrimitive) {
+      if(currentOrbGeoType == lastAdjacentGeoType) {
         currentlyAdjacent.push(orbs[i]);
 
         if(currentlyAdjacent.length >= 5) { // No longer than 5 at any event
@@ -152,22 +145,24 @@ AFRAME.registerComponent('chromastack', {
 
 
     for(let a = 0; a < orbs.length; a++) {
+      console.log("What da heck?")
       const orb  = orbs[a];
       const currentPos = orb.getAttribute('position');
+      const threePos   = orb.object3D.position
+
       const newY =  (0.54 * a) + 0.54
       const positionTo = { x: currentPos.x, y: newY, z: currentPos.z }
 
       orb.setAttribute('animation__shrinkOrbs', { property: 'position', dur: 1000, to: positionTo });
+      this.removeMarkedObjects();
     }
 
-    const removeSound = document.querySelector('#remove-sound');
-    removeSound.components.sound.playSound();
+    //const removeSound = document.querySelector('#remove-sound');
+    //removeSound.components.sound.playSound();
   },
 
   removeMarkedObjects: function(e) {
-    if(e.detail.name != "animation__shrinkOrbs") return false
-
-
+    //if(e.detail.name != "animation__shrinkOrbs") return false
 
     const toRemove = document.querySelectorAll('[matched]');
 
@@ -179,7 +174,7 @@ AFRAME.registerComponent('chromastack', {
   },
 
   getOrbs: function() {
-    const  orbs = Array.from(this.el.querySelectorAll('[data-clickable]'));
+    const  orbs = Array.from(this.el.querySelectorAll('[data-orb]'));
     return orbs;
   }
 

@@ -36,17 +36,20 @@ AFRAME.registerComponent('orb-picker', {
   swapOrbs: function() {
     if(!this.firstOrb || !this.secondOrb) return   false;
 
-    const  firstOrbColor  = this.firstOrb.getAttribute('material').color;
-    const  secondOrbColor = this.secondOrb.getAttribute('material').color;
+    const firstOrbKind  = this.firstOrb.getAttribute('geometry').primitive
+    const secondOrbKind = this.secondOrb.getAttribute('geometry').primitive
 
-    const  firstOrbGeo    = this.firstOrb.getAttribute('geometry');
-    const  secondOrbGeo   = this.secondOrb.getAttribute('geometry');
+    const firstOrbReferenceSelector  = "#" + firstOrbKind + '-template'
+    const secondOrbReferenceSelector = "#" + secondOrbKind + '-template'
 
-    this.firstOrb.setAttribute('material', 'color', secondOrbColor);
-    this.secondOrb.setAttribute('material', 'color', firstOrbColor);
+    const firstOrbReference  = document.querySelector(firstOrbReferenceSelector)
+    const secondOrbReference = document.querySelector(secondOrbReferenceSelector)
 
-    this.firstOrb.setAttribute('geometry', secondOrbGeo, true);
-    this.secondOrb.setAttribute('geometry', firstOrbGeo, true);
+    this.firstOrb.setAttribute('material', secondOrbReference.getAttribute('material'))
+    this.secondOrb.setAttribute('material', firstOrbReference.getAttribute('material'))
+
+    this.firstOrb.setAttribute('geometry', secondOrbReference.getAttribute('geometry'))
+    this.secondOrb.setAttribute('geometry', firstOrbReference.getAttribute('geometry'))
 
     // Play the swap sound
     const swapSound = document.querySelector('#move-sound');
@@ -100,8 +103,4 @@ AFRAME.registerComponent('orb-picker', {
     this.secondOrb = null;
   },
 
-  getOrbs: function(stack) {
-    const orbs = Array.from(stack.el.children);
-    return orbs;
-  }
 });

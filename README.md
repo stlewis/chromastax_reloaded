@@ -1,62 +1,28 @@
-# ES6 Boilerplate
+# Chromastax
 
-ES6 Boilerplate.
+Chromastax is a WebVR game inspired by Bejewled and Tetris. It can be played on desktop, mobile devices, and in most types of VR HMD's.
 
-Built with [A-Frame](https://aframe.io).
+## Playing The Game
 
-## About
+This README is mostly for the benefit of people who would like to contribute to the development of the game. If you're only interested in _playing_ Chromastax, head over to the [Demo Page](https://webvr.decodingsteve.com/chromastax) and try it out! For game play instructions, you can check out the (very basic), [manual page](https://github.com/stlewis/chromastax_reloaded/blob/master/HOWTO.md) contained in this repository.
 
-This is just my personal AFrame starter template with some basic build steps
-included.
+## Contributing
 
-## Setup
+I'm very open to any contributions, be they bug reports, comments, suggestions, or even PR's with improvements or code fixes. If you'd like to file a bug, comment or suggestion, please [open an issue](https://github.com/stlewis/chromastax_reloaded/issues/new).
 
-```sh
-npm install
-npm run start
-```
+If you're interested in working on the code, you'll need to make sure that you have a development environment that is suitable. Mostly this means having a relatively recent version of npm installed on your computer. To get up and running:
 
-## Developing
+1. Fork this repository.
+2. Clone your forked repository to your local machine.
+3. Inside the project directory execute `npm i`
+4. Still inside the project directory, execute `npm run build`
 
-While you're actively working on code, you may want to run the `watch` command.
-This will continuously rebuild your bundle for you as you make changes. Note
-that this must be run _in addition to_, not instead of, `run`.
+The 4th step will package all of the source files into a final `build.js`, which is already linked inside of the index.
 
-## Building and Releasing
+After everything is built, you can start the project with `npm run start`. This will start a `live-server` instance and open the game up in your default browser. The benefit of `live-server` is that it will reload the page every time you make changes to your source.
 
-Put your JS source files into the `src` directory however you would like, just
-make sure to include them in the top-level `index.js` file.  You can include
-your files using either `import` or `require` syntax:
+A quick note related to that though. All of the A-Frame components for this project, (located in the `components` directory), are included in `index.js` in order to be bundled into `build.js`. Because `index.html` only includes `build.js`, this means that before your changes to any component are reflected in the game, you will need to rebuild.
 
-```javascript
-import "./src/my-component.js"
+To get around this temporarily, simply comment out the reference to the component you're working on in `index.js`, use a `<script>` tag to directly include the component on `index.html`, then rebuild. Thereafter, changes to the directly included component will be reflected immediately. I only ask that you don't leave things in this state permanently, as I'd prefer for everything to be compiled and referenced from `build.js`.
 
-require("./src/my-component.js");
-```
-
-When you want to bundle your included JS files into `build/bundle.js` just call
-`npm run build` from the command line. If you'd prefer a minified version, call
-`npm run release`. This will create the file `build/bundle.min.js`. If you want
-to use the minified version in your scene, be sure to update the script
-reference in `index.html`.
-
-
-## A-Frame Version
-
-The `package.json` file is locking the A-Frame version to 0.8.2, which is the
-latest stable release as of this writing. To update to a different stable
-version, just update the pin. You'll need to rebuild afterwards to make sure
-that the bundled javascript has the latest. If you'd prefer to work from
-`master` instead, just replace this line:
-
-```json
-"aframe": "^0.8.2"
-```
-
-With this one:
-
-```json
-"aframe": "github:aframevr/aframe#master"
-```
-
-
+After you've finished working on the code, please feel free to submit a pull request, and I'll take a look as soon as I'm able!

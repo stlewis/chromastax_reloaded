@@ -27,10 +27,8 @@ AFRAME.registerComponent('logic-controller', {
   },
 
   _disableStartUI: function() {
-    const startHelpText = document.querySelector('#start-help-text')
-
-    document.querySelector('#game-start-button').removeAttribute('data-clickable');
-    startHelpText.setAttribute('visible', false);
+    const startButton = document.querySelector('#start-button')
+    startButton.setAttribute('visible', false);
   },
 
   _initSounds: function() {

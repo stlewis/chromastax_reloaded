@@ -17,8 +17,9 @@ require('./src/state.js');
 
 require('./src/components/logic-controller.js');
 
-require('./src/components/portal.js'); //require('./src/components/chromastack.js')
+require('./src/components/portal.js');
 
+require('./src/components/chromastack.js');
 
 require('./src/components/orb-picker.js');
 
@@ -28,7 +29,7 @@ require('./src/components/game-controls.js');
 
 require('./src/components/game-starter.js');
 
-},{"./src/components/game-controls.js":79,"./src/components/game-starter.js":80,"./src/components/logic-controller.js":81,"./src/components/orb-picker.js":82,"./src/components/orb.js":83,"./src/components/portal.js":84,"./src/state.js":85,"aframe":25,"aframe-environment-component":2,"aframe-gui":19,"aframe-layout-component":22,"aframe-state-component":23,"aframe-template-component":24}],2:[function(require,module,exports){
+},{"./src/components/chromastack.js":79,"./src/components/game-controls.js":80,"./src/components/game-starter.js":81,"./src/components/logic-controller.js":82,"./src/components/orb-picker.js":83,"./src/components/orb.js":84,"./src/components/portal.js":85,"./src/state.js":86,"aframe":25,"aframe-environment-component":2,"aframe-gui":19,"aframe-layout-component":22,"aframe-state-component":23,"aframe-template-component":24}],2:[function(require,module,exports){
 /* global AFRAME, THREE */
 
 if (typeof AFRAME === 'undefined') {
@@ -88570,6 +88571,192 @@ module.exports = function (value) { return value !== _undefined && value !== nul
 },{}],79:[function(require,module,exports){
 "use strict";
 
+AFRAME.registerComponent('chromastack', {
+  schema: {
+    sphereTimer: {
+      type: 'number',
+      default: 3000
+    },
+    maximumStackHeight: {
+      type: 'number',
+      default: 12
+    },
+    shapes: {
+      type: 'array',
+      default: ['box', 'cone', 'sphere']
+    }
+  },
+  init: function init() {
+    this.state = this.el.sceneEl.systems.state.state;
+    this.throttledAdd = AFRAME.utils.throttle(this.addOrb, this.data.sphereTimer, this);
+    this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this));
+  },
+  tick: function tick() {
+    this._removeAdjacentOrbs();
+
+    this.throttledAdd();
+
+    this._calculateOrbPositions();
+  },
+  handleOrbSwap: function handleOrbSwap() {
+    this._removeAdjacentOrbs();
+  },
+  createOrb: function createOrb(shape) {
+    var referenceEntitySelector = '#' + shape + '-template';
+    var referenceEntity = document.querySelector(referenceEntitySelector);
+    var orb = document.createElement('a-entity');
+    orb.setAttribute('class', 'orb ' + shape);
+    orb.setAttribute('data-clickable', {});
+    orb.setAttribute('orb', {});
+    orb.setAttribute('geometry', referenceEntity.getAttribute('geometry'));
+    orb.setAttribute('position', {
+      x: 0,
+      y: -0.6,
+      z: 0
+    });
+    orb.setAttribute('material', referenceEntity.getAttribute('material'));
+    orb.setAttribute('animation__orbEmission', {
+      property: 'material.emissiveIntensity',
+      from: 0.7,
+      to: 0.2,
+      loop: true,
+      dir: 'alternate'
+    });
+    return orb;
+  },
+  addOrb: function addOrb(shape) {
+    if (!this.state.gamePlaying) return false;
+    var shapeList = Array.from(this.el.children).map(function (s) {
+      return s.components['geometry'].data.primitive;
+    });
+    var lastShape = shapeList[0];
+    var validShapes = lastShape ? this.data.shapes.filter(function (k) {
+      return k != lastShape;
+    }) : this.data.shapes;
+    shape = shape ? shape : validShapes[Math.floor(Math.random() * validShapes.length)];
+    var orb = this.createOrb(shape);
+    this.el.prepend(orb);
+  },
+  _calculateOrbPositions: function _calculateOrbPositions() {
+    var orbs = this.getOrbs(); // From bottom to top
+
+    for (var i = 0; i < orbs.length; i++) {
+      var currentOrb = orbs[i];
+      var objectOffset = i == 0 ? 0 : 0.055;
+      var orbY = objectOffset + 0.5 + 0.5 * i;
+      currentOrb.setAttribute('animation__liftOrb', {
+        property: 'object3D.position.y',
+        dur: 500,
+        to: orbY,
+        isRawProperty: true
+      });
+    }
+
+    if (orbs.length > this.data.maximumStackHeight) {
+      this.el.emit("gameOver", {
+        stack: this
+      });
+    }
+  },
+  _removeAdjacentOrbs: function _removeAdjacentOrbs() {
+    var orbs = this.getOrbs();
+    if (orbs.length <= 1) return false;
+    var currentlyAdjacent = [];
+
+    for (var i = 0; i < orbs.length; i++) {
+      var orb = orbs[i];
+
+      if (currentlyAdjacent.length == 0) {
+        currentlyAdjacent.push(orbs[i]);
+        continue;
+      }
+
+      var currentOrbGeoType = orbs[i].getObject3D('mesh').geometry.metadata.type;
+      var lastAdjacent = currentlyAdjacent[currentlyAdjacent.length - 1];
+      var lastAdjacentGeoType = null;
+
+      if (lastAdjacent) {
+        lastAdjacentGeoType = lastAdjacent.getObject3D('mesh').geometry.metadata.type;
+      }
+
+      if (currentOrbGeoType == lastAdjacentGeoType) {
+        currentlyAdjacent.push(orbs[i]);
+
+        if (currentlyAdjacent.length >= 5) {
+          // No longer than 5 at any event
+          this.removeObjects(currentlyAdjacent);
+          orbs = this.getOrbs();
+        }
+      } else {
+        if (currentlyAdjacent.length >= 3) {
+          this.removeObjects(currentlyAdjacent);
+        }
+
+        currentlyAdjacent = [];
+        currentlyAdjacent.push(orbs[i]);
+        orbs = this.getOrbs();
+      }
+    }
+
+    if (currentlyAdjacent.length >= 3) {
+      this.removeObjects(currentlyAdjacent);
+      orbs = this.getOrbs();
+    }
+  },
+  removeObjects: function removeObjects(objects) {
+    if (objects.length == 0) return true;
+    this.el.sceneEl.emit('increaseScore', {
+      objectCount: objects.length
+    });
+
+    for (var j = 0; j < objects.length; j++) {
+      var orb = objects[j];
+
+      if (orb.parentNode) {
+        orb.setAttribute('matched');
+        orb.removeAttribute('data-clickable');
+      }
+    }
+
+    var orbs = this.getOrbs();
+
+    for (var a = 0; a < orbs.length; a++) {
+      var _orb = orbs[a];
+      var newY = 0.54 * a + 0.54;
+      this.removeMarkedObjects();
+    }
+
+    var removeSound = document.querySelector('#remove-sound').components.sound;
+
+    if (!removeSound.isPlaying) {
+      removeSound.playSound();
+    }
+  },
+  removeMarkedObjects: function removeMarkedObjects() {
+    var toRemove = document.querySelectorAll('[matched]');
+
+    for (var i = 0; i < toRemove.length; i++) {
+      var orb = toRemove[i];
+      orb.setAttribute('animation__shrinkAway', {
+        property: 'scale',
+        to: {
+          x: 0,
+          y: 0,
+          z: 0
+        },
+        dur: 500
+      });
+    }
+  },
+  getOrbs: function getOrbs() {
+    var orbs = Array.from(this.el.querySelectorAll('[orb]'));
+    return orbs;
+  }
+});
+
+},{}],80:[function(require,module,exports){
+"use strict";
+
 AFRAME.registerComponent('game-controls', {
   init: function init() {
     console.log(AFRAME.utils.device.isMobileVR());
@@ -88641,7 +88828,7 @@ AFRAME.registerComponent('game-controls', {
   }
 });
 
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerComponent('game-starter', {
@@ -88653,7 +88840,7 @@ AFRAME.registerComponent('game-starter', {
   }
 });
 
-},{}],81:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 "use strict";
 
 /*
@@ -88686,9 +88873,8 @@ AFRAME.registerComponent('logic-controller', {
     });
   },
   _disableStartUI: function _disableStartUI() {
-    var startHelpText = document.querySelector('#start-help-text');
-    document.querySelector('#game-start-button').removeAttribute('data-clickable');
-    startHelpText.setAttribute('visible', false);
+    var startButton = document.querySelector('#start-button');
+    startButton.setAttribute('visible', false);
   },
   _initSounds: function _initSounds() {
     var moveSound = document.createElement('a-entity');
@@ -88844,7 +89030,7 @@ AFRAME.registerComponent('logic-controller', {
   }
 });
 
-},{}],82:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerComponent('orb-picker', {
@@ -88959,7 +89145,7 @@ AFRAME.registerComponent('orb-picker', {
   }
 });
 
-},{}],83:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerComponent('orb', {
@@ -88969,14 +89155,13 @@ AFRAME.registerComponent('orb', {
   handleLower: function handleLower(e) {
     switch (e.detail.name) {
       case 'animation__shrinkAway':
-        console.log("We doin it?", this);
         this.el.parentNode.removeChild(this.el);
         break;
     }
   }
 });
 
-},{}],84:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerComponent('portal', {
@@ -89008,9 +89193,11 @@ AFRAME.registerComponent('portal', {
     this.el.addEventListener('animationbegin', function (e) {
       switch (e.detail.name) {
         case "animation__portalsUp":
-          var _portalsUpSound = document.querySelector("#portals-up-sound");
+          var _portalsUpSound = document.querySelector("#portals-up-sound").components.sound;
 
-          _portalsUpSound.components.sound.playSound();
+          if (!_portalsUpSound.isPlaying) {
+            _portalsUpSound.playSound();
+          }
 
           break;
       }
@@ -89018,7 +89205,7 @@ AFRAME.registerComponent('portal', {
   }
 });
 
-},{}],85:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerState({

@@ -3,9 +3,8 @@
   <head>
     <meta charset="utf-8">
     <title>Chromastax</title>
-    <meta name="description" content="ES6 Boilerplate">
+    <meta name="description" content="WebVR game inspired by Tetris and Bejewled">
     <script src='./build/bundle.js'></script>
-    <script src='./src/components/chromastack.js'></script>
   </head>
   <body>
     <a-scene logic-controller environment='preset: starry;'>
@@ -13,6 +12,8 @@
         <img id='platform-floor' src='./textures/metal-plate.jpg'>
       </a-assets>
       <a-mixin id='logo-font'
+               data-clickable
+               game-starter
                text="shader: msdf;
                      font:https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/fredokaone/FredokaOne-Regular.json;
                      width: 20;"></a-mixin>

@@ -1,16 +1,23 @@
-<a-entity id='game-start-button' game-starter data-clickable>
-  <a-entity data-clickable mixin='logo-font' text="value:C; color: red;" position="4 0  0"></a-entity>
-  <a-entity data-clickable mixin='logo-font' text="value:H; color: green;" position="4.6 0  0"></a-entity>
-  <a-entity data-clickable mixin='logo-font' text="value:R; color: blue;" position="5.2 0 0"></a-entity>
-  <a-entity data-clickable mixin='logo-font' text="value:O; color: cyan;" position="5.75 0 0"></a-entity>
-  <a-entity data-clickable mixin='logo-font' text="value:M; color: yellow;" position="6.4 0 0"></a-entity>
-  <a-entity data-clickable mixin='logo-font' text="value:A; color: magenta" position="7.2 0 0"></a-entity>
-  <a-entity data-clickable mixin='logo-font' text="value:S; color: gold;" position="7.9 0 0"></a-entity>
-  <a-entity data-clickable mixin='logo-font' text="value:T; color: purple;" position="8.4 0 0"></a-entity>
-  <a-entity data-clickable mixin='logo-font' text="value:A; color: orange;" position="8.9 0 0"></a-entity>
-  <a-entity data-clickable mixin='logo-font' text="value:X; color: sienna;" position="9.6 0 0"></a-entity>
-</a-entity>
-<a-text id='start-help-text' color='#FFFFFF' rotation='0 0 0' position='-4.5 0 0' width='10' value="Click Logo To Play"></a-text>
+<a-entity mixin='logo-font' text="value:C; color: red;" position="4 0  0"></a-entity>
+<a-entity mixin='logo-font' text="value:H; color: green;" position="4.6 0  0"></a-entity>
+<a-entity mixin='logo-font' text="value:R; color: blue;" position="5.2 0 0"></a-entity>
+<a-entity mixin='logo-font' text="value:O; color: cyan;" position="5.75 0 0"></a-entity>
+<a-entity mixin='logo-font' text="value:M; color: yellow;" position="6.4 0 0"></a-entity>
+<a-entity mixin='logo-font' text="value:A; color: magenta" position="7.2 0 0"></a-entity>
+<a-entity mixin='logo-font' text="value:S; color: gold;" position="7.9 0 0"></a-entity>
+<a-entity mixin='logo-font' text="value:T; color: purple;" position="8.4 0 0"></a-entity>
+<a-entity mixin='logo-font' text="value:A; color: orange;" position="8.9 0 0"></a-entity>
+<a-entity mixin='logo-font' text="value:X; color: sienna;" position="9.6 0 0"></a-entity>
 
-<a-entity id='the-portals' template='src: ./src/templates/reference_orbs.html'></a-entity>
+<a-gui-button
+  id='start-button'
+  data-clickable
+  game-starter
+  width='2.5' height='0.75'
+  position='-3 -1.5 0'
+  value='Start Game'
+  font-family='Arial'
+  ></a-gui-button>
+
+<a-entity id='the-orbs' template='src: ./src/templates/reference_orbs.html'></a-entity>
 

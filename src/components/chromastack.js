@@ -141,8 +141,10 @@ AFRAME.registerComponent('chromastack', {
       this.removeMarkedObjects();
     }
 
-    const removeSound = document.querySelector('#remove-sound');
-    removeSound.components.sound.playSound();
+    const removeSound = document.querySelector('#remove-sound').components.sound;
+    if(!removeSound.isPlaying) {
+      removeSound.playSound();
+    }
   },
 
   removeMarkedObjects: function() {

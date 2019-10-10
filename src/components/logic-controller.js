@@ -39,7 +39,7 @@ AFRAME.registerComponent('logic-controller', {
     const pickSound      = document.createElement('a-entity');
     const gameOverSound  = document.createElement('a-entity');
 
-    moveSound.setAttribute('sound', { src: './sounds/glass-tink.flac' })
+    moveSound.setAttribute('sound', { src: './sounds/orb-select.wav' })
     moveSound.setAttribute('id', 'move-sound')
     moveSound.setAttribute('position', {x: 0, y: 0, z: 0})
 
@@ -51,7 +51,7 @@ AFRAME.registerComponent('logic-controller', {
     pickSound.setAttribute('id', 'pick-sound')
     pickSound.setAttribute('position', {x: 0, y: 0, z: 0})
 
-    gameOverSound.setAttribute('sound', { src: './sounds/orb-select.wav' })
+    gameOverSound.setAttribute('sound', { src: './sounds/game-over.wav' })
     gameOverSound.setAttribute('id', 'game-over-sound')
     gameOverSound.setAttribute('position', {x: 0, y: 0, z: 0})
 

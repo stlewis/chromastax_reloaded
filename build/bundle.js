@@ -17,17 +17,18 @@ require('./src/state.js');
 
 require('./src/components/logic-controller.js');
 
-require('./src/components/portal.js');
+require('./src/components/portal.js'); //require('./src/components/chromastack.js')
 
-require('./src/components/chromastack.js');
 
 require('./src/components/orb-picker.js');
+
+require('./src/components/orb.js');
 
 require('./src/components/game-controls.js');
 
 require('./src/components/game-starter.js');
 
-},{"./src/components/chromastack.js":79,"./src/components/game-controls.js":80,"./src/components/game-starter.js":81,"./src/components/logic-controller.js":82,"./src/components/orb-picker.js":83,"./src/components/portal.js":84,"./src/state.js":85,"aframe":25,"aframe-environment-component":2,"aframe-gui":19,"aframe-layout-component":22,"aframe-state-component":23,"aframe-template-component":24}],2:[function(require,module,exports){
+},{"./src/components/game-controls.js":79,"./src/components/game-starter.js":80,"./src/components/logic-controller.js":81,"./src/components/orb-picker.js":82,"./src/components/orb.js":83,"./src/components/portal.js":84,"./src/state.js":85,"aframe":25,"aframe-environment-component":2,"aframe-gui":19,"aframe-layout-component":22,"aframe-state-component":23,"aframe-template-component":24}],2:[function(require,module,exports){
 /* global AFRAME, THREE */
 
 if (typeof AFRAME === 'undefined') {
@@ -88569,200 +88570,6 @@ module.exports = function (value) { return value !== _undefined && value !== nul
 },{}],79:[function(require,module,exports){
 "use strict";
 
-AFRAME.registerComponent('chromastack', {
-  schema: {
-    sphereTimer: {
-      type: 'number',
-      default: 3000
-    },
-    maximumStackHeight: {
-      type: 'number',
-      default: 12
-    },
-    shapes: {
-      type: 'array',
-      default: ['box', 'cone', 'sphere']
-    }
-  },
-  init: function init() {
-    this.state = this.el.sceneEl.systems.state.state;
-    this.throttledAdd = AFRAME.utils.throttle(this.addOrb, this.data.sphereTimer, this);
-    this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this));
-  },
-  testAnimation: function testAnimation(e) {
-    console.log(e.detail);
-  },
-  tick: function tick() {
-    this._removeAdjacentOrbs();
-
-    if (this.getOrbs().length <= 5) {
-      this.throttledAdd();
-    }
-  },
-  handleOrbSwap: function handleOrbSwap() {
-    this._removeAdjacentOrbs();
-  },
-  createOrb: function createOrb(shape) {
-    var referenceEntitySelector = '#' + shape + '-template';
-    var referenceEntity = document.querySelector(referenceEntitySelector);
-    var orb = document.createElement('a-entity');
-    orb.setAttribute('class', 'orb ' + shape);
-    orb.setAttribute('data-clickable', {});
-    orb.setAttribute('data-orb', {});
-    orb.setAttribute('geometry', referenceEntity.getAttribute('geometry'));
-    orb.setAttribute('position', {
-      x: 0,
-      y: -0.6,
-      z: 0
-    });
-    orb.setAttribute('material', referenceEntity.getAttribute('material'));
-    return orb;
-  },
-  addOrb: function addOrb(shape) {
-    if (!this.state.gamePlaying) return false;
-    var shapeList = Array.from(this.el.children).map(function (s) {
-      return s.components['geometry'].data.primitive;
-    });
-    var lastShape = shapeList[0];
-    var validShapes = lastShape ? this.data.shapes.filter(function (k) {
-      return k != lastShape;
-    }) : this.data.shapes;
-    shape = shape ? shape : validShapes[Math.floor(Math.random() * validShapes.length)];
-    var orb = this.createOrb(shape);
-    this.el.prepend(orb);
-
-    this._calculateOrbPositions();
-  },
-  _calculateOrbPositions: function _calculateOrbPositions() {
-    var orbs = this.getOrbs(); // From bottom to top
-
-    for (var i = 0; i < orbs.length; i++) {
-      var currentOrb = orbs[i];
-      var objectOffset = i == 0 ? 0 : 0.055;
-      var orbPos = currentOrb.object3D.position;
-      var orbY = objectOffset + 0.5 + 0.5 * i;
-      currentOrb.setAttribute('animation', {
-        property: 'position',
-        dur: 500,
-        to: {
-          x: orbPos.x,
-          y: orbY,
-          z: orbPos.z
-        }
-      });
-    }
-
-    if (orbs.length > this.data.maximumStackHeight) {
-      this.el.emit("gameOver", {
-        stack: this
-      });
-    }
-  },
-  _removeAdjacentOrbs: function _removeAdjacentOrbs() {
-    var orbs = this.getOrbs();
-    if (orbs.length <= 1) return false;
-    var currentlyAdjacent = [];
-
-    for (var i = 0; i < orbs.length; i++) {
-      var orb = orbs[i];
-
-      if (currentlyAdjacent.length == 0) {
-        currentlyAdjacent.push(orbs[i]);
-        continue;
-      }
-
-      var currentOrbGeoType = orbs[i].getObject3D('mesh').geometry.metadata.type;
-      var lastAdjacent = currentlyAdjacent[currentlyAdjacent.length - 1];
-      var lastAdjacentGeoType = null;
-
-      if (lastAdjacent) {
-        lastAdjacentGeoType = lastAdjacent.getObject3D('mesh').geometry.metadata.type;
-      }
-
-      if (currentOrbGeoType == lastAdjacentGeoType) {
-        currentlyAdjacent.push(orbs[i]);
-
-        if (currentlyAdjacent.length >= 5) {
-          // No longer than 5 at any event
-          this.removeObjects(currentlyAdjacent);
-          orbs = this.getOrbs();
-        }
-      } else {
-        if (currentlyAdjacent.length >= 3) {
-          this.removeObjects(currentlyAdjacent);
-        }
-
-        currentlyAdjacent = [];
-        currentlyAdjacent.push(orbs[i]);
-        orbs = this.getOrbs();
-      }
-    }
-
-    if (currentlyAdjacent.length >= 3) {
-      this.removeObjects(currentlyAdjacent);
-      orbs = this.getOrbs();
-    }
-  },
-  removeObjects: function removeObjects(objects) {
-    if (objects.length == 0) return true;
-    this.el.sceneEl.emit('increaseScore', {
-      objectCount: objects.length
-    });
-
-    for (var j = 0; j < objects.length; j++) {
-      var orb = objects[j];
-
-      if (orb.parentNode) {
-        orb.setAttribute('matched');
-        orb.removeAttribute('data-clickable');
-      }
-    }
-
-    var orbs = this.getOrbs();
-
-    for (var a = 0; a < orbs.length; a++) {
-      console.log("What da heck?");
-      var _orb = orbs[a];
-
-      var currentPos = _orb.getAttribute('position');
-
-      var threePos = _orb.object3D.position;
-      var newY = 0.54 * a + 0.54;
-      var positionTo = {
-        x: currentPos.x,
-        y: newY,
-        z: currentPos.z
-      };
-
-      _orb.setAttribute('animation__shrinkOrbs', {
-        property: 'position',
-        dur: 500,
-        to: positionTo
-      });
-
-      this.removeMarkedObjects();
-    }
-
-    var removeSound = document.querySelector('#remove-sound');
-    removeSound.components.sound.playSound();
-  },
-  removeMarkedObjects: function removeMarkedObjects(e) {
-    var toRemove = document.querySelectorAll('[matched]');
-
-    for (var i = 0; i < toRemove.length; i++) {
-      var orb = toRemove[i];
-      orb.parentNode.removeChild(orb);
-    }
-  },
-  getOrbs: function getOrbs() {
-    var orbs = Array.from(this.el.querySelectorAll('[data-orb]'));
-    return orbs;
-  }
-});
-
-},{}],80:[function(require,module,exports){
-"use strict";
-
 AFRAME.registerComponent('game-controls', {
   init: function init() {
     console.log(AFRAME.utils.device.isMobileVR());
@@ -88834,7 +88641,7 @@ AFRAME.registerComponent('game-controls', {
   }
 });
 
-},{}],81:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerComponent('game-starter', {
@@ -88846,7 +88653,7 @@ AFRAME.registerComponent('game-starter', {
   }
 });
 
-},{}],82:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 "use strict";
 
 /*
@@ -88889,7 +88696,7 @@ AFRAME.registerComponent('logic-controller', {
     var pickSound = document.createElement('a-entity');
     var gameOverSound = document.createElement('a-entity');
     moveSound.setAttribute('sound', {
-      src: './sounds/glass-tink.flac'
+      src: './sounds/orb-select.wav'
     });
     moveSound.setAttribute('id', 'move-sound');
     moveSound.setAttribute('position', {
@@ -88916,7 +88723,7 @@ AFRAME.registerComponent('logic-controller', {
       z: 0
     });
     gameOverSound.setAttribute('sound', {
-      src: './sounds/orb-select.wav'
+      src: './sounds/game-over.wav'
     });
     gameOverSound.setAttribute('id', 'game-over-sound');
     gameOverSound.setAttribute('position', {
@@ -89037,7 +88844,7 @@ AFRAME.registerComponent('logic-controller', {
   }
 });
 
-},{}],83:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 "use strict";
 
 AFRAME.registerComponent('orb-picker', {
@@ -89149,6 +88956,23 @@ AFRAME.registerComponent('orb-picker', {
     if (bounding) bounding.parentNode.removeChild(bounding);
     this.firstOrb = null;
     this.secondOrb = null;
+  }
+});
+
+},{}],83:[function(require,module,exports){
+"use strict";
+
+AFRAME.registerComponent('orb', {
+  init: function init() {
+    this.el.addEventListener('animationcomplete', this.handleLower.bind(this));
+  },
+  handleLower: function handleLower(e) {
+    switch (e.detail.name) {
+      case 'animation__shrinkAway':
+        console.log("We doin it?", this);
+        this.el.parentNode.removeChild(this.el);
+        break;
+    }
   }
 });
 

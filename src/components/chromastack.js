@@ -11,15 +11,10 @@ AFRAME.registerComponent('chromastack', {
     this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this));
   },
 
-  testAnimation: function(e) {
-    console.log(e.detail)
-  },
-
   tick: function() {
     this._removeAdjacentOrbs();
-    if(this.getOrbs().length <= 5) {
-      this.throttledAdd()
-    }
+    this.throttledAdd()
+    this._calculateOrbPositions();
   },
 
   handleOrbSwap: function() {
@@ -35,7 +30,7 @@ AFRAME.registerComponent('chromastack', {
     const orb = document.createElement('a-entity');
     orb.setAttribute('class', 'orb ' + shape);
     orb.setAttribute('data-clickable', {});
-    orb.setAttribute('data-orb', {});
+    orb.setAttribute('orb', {});
     orb.setAttribute('geometry', referenceEntity.getAttribute('geometry'));
     orb.setAttribute('position', {x: 0, y: -0.6, z: 0});
 
@@ -55,7 +50,6 @@ AFRAME.registerComponent('chromastack', {
 
     let orb = this.createOrb(shape);
     this.el.prepend(orb);
-    this._calculateOrbPositions();
   },
 
   _calculateOrbPositions: function() {
@@ -65,10 +59,9 @@ AFRAME.registerComponent('chromastack', {
     for(let i = 0;  i < orbs.length; i++) {
       const currentOrb   = orbs[i]
       const objectOffset =  i == 0 ? 0 : 0.055
-      const orbPos       = currentOrb.object3D.position;
       const orbY         = objectOffset + (0.5) + (0.5 * i)
 
-      currentOrb.setAttribute('animation', {property: 'position', dur: 500, to: {x: orbPos.x, y: orbY, z: orbPos.z } })
+      currentOrb.setAttribute('animation__liftOrb', {property: 'object3D.position.y', dur: 500, to: orbY, isRawProperty: true })
     }
 
     if(orbs.length > this.data.maximumStackHeight) {
@@ -142,15 +135,8 @@ AFRAME.registerComponent('chromastack', {
 
 
     for(let a = 0; a < orbs.length; a++) {
-      console.log("What da heck?")
       const orb  = orbs[a];
-      const currentPos = orb.getAttribute('position');
-      const threePos   = orb.object3D.position
-
       const newY =  (0.54 * a) + 0.54
-      const positionTo = { x: currentPos.x, y: newY, z: currentPos.z }
-
-      orb.setAttribute('animation__shrinkOrbs', { property: 'position', dur: 500, to: positionTo });
       this.removeMarkedObjects();
     }
 
@@ -158,17 +144,17 @@ AFRAME.registerComponent('chromastack', {
     removeSound.components.sound.playSound();
   },
 
-  removeMarkedObjects: function(e) {
+  removeMarkedObjects: function() {
     const toRemove = document.querySelectorAll('[matched]');
 
     for(let i = 0; i < toRemove.length; i++) {
       const orb = toRemove[i];
-      orb.parentNode.removeChild(orb);
+      orb.setAttribute('animation__shrinkAway', {property: 'scale', to: {x: 0, y: 0, z: 0}, dur: 500 })
     }
   },
 
   getOrbs: function() {
-    const  orbs = Array.from(this.el.querySelectorAll('[data-orb]'));
+    const  orbs = Array.from(this.el.querySelectorAll('[orb]'));
     return orbs;
   }
 

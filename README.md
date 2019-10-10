@@ -26,3 +26,24 @@ A quick note related to that though. All of the A-Frame components for this proj
 To get around this temporarily, simply comment out the reference to the component you're working on in `index.js`, use a `<script>` tag to directly include the component on `index.html`, then rebuild. Thereafter, changes to the directly included component will be reflected immediately. I only ask that you don't leave things in this state permanently, as I'd prefer for everything to be compiled and referenced from `build.js`.
 
 After you've finished working on the code, please feel free to submit a pull request, and I'll take a look as soon as I'm able!
+
+## Architectural Overview
+
+The remainder of this README will discuss the components of the Chromastax game, how they work and how they fit together. As of this writing there are 7 individual components:
+
+* chromastack
+* game-controls
+* game-starter
+* logic-controller
+* orb-picker
+* orb
+* portal
+
+In addition to the above, the game uses the [aframe-state-component](https://github.com/supermedium/superframe/tree/master/components/state/) to manage things like the score and game levels, etc. The layout and use of the state object will be discussed in detail below.
+
+
+### chromastack
+
+The `chromastack` component is responsible for psuedo-randomly generating shapes, (referred to as 'orbs'), that are pushed out of the portals on the floor. I say psuedo-randomly, not to make a pedantic point about the nature of computer-generated randomness, but because the randomness in this case is actually being controlled: A single shape cannot come out of the same stack twice in a row.
+
+In addition to _generating_ shapes, a `chromastack` is responsible for maintaining it's own internal state and removing any adjacent orbs from itself.

@@ -81,7 +81,7 @@ AFRAME.registerComponent('logic-controller', {
     for(let i = 0; i < this.state.levelData.activeStacks.length; i++){
 
       const activeStack = this.state.levelData.activeStacks[i];
-      const portal      = document.querySelector("#platform" + activeStack);
+      const portal      = document.querySelector("#portal" + activeStack);
       const self        = this
       const stack       = this._buildStack();
 
@@ -136,7 +136,7 @@ AFRAME.registerComponent('logic-controller', {
     for(let i = 0; i < levelData.activeStacks.length; i++){
       const activeStack = levelData.activeStacks[i];
 
-      const portal = document.querySelector("#platform" + activeStack);
+      const portal = document.querySelector("#portal" + activeStack);
       portal.removeAttribute('animation__portalsUp');
 
       portal.setAttribute("material", { emissiveIntensity: 0.2 })

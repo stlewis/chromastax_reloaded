@@ -35,6 +35,7 @@ AFRAME.registerComponent('chromastack', {
     orb.setAttribute('position', {x: 0, y: -0.6, z: 0});
 
     orb.setAttribute('material', referenceEntity.getAttribute('material'));
+    orb.setAttribute('animation__orbEmission', {property: 'material.emissiveIntensity', from: 0.7, to: 0.2, loop: true, dir: 'alternate'})
 
     return orb
   },

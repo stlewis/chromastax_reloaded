@@ -17,6 +17,15 @@
                      font:https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/fredokaone/FredokaOne-Regular.json;
                      width: 20;"></a-mixin>
 
+      <a-mixin id='orb-material'
+               material=" shader: standard;
+                          metalness: 0.5;
+                          roughness: 0.2;
+                          emissiveIntensity: 0.7;"></a-mixin>
+      <a-mixin id='portal-spec'
+               material='color: black; emissive: #ffffff; emissiveIntensity: 0.2'
+               geometry='primitive: circle; radius: 0.5'></a-mixin>
+
       <a-entity id='riser' position='0 15 0'>
 
         <a-entity id='rig' game-controls position='0 0 0'>

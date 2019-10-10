@@ -88615,13 +88615,6 @@ AFRAME.registerComponent('chromastack', {
       z: 0
     });
     orb.setAttribute('material', referenceEntity.getAttribute('material'));
-    orb.setAttribute('animation__orbEmission', {
-      property: 'material.emissiveIntensity',
-      from: 0.7,
-      to: 0.2,
-      loop: true,
-      dir: 'alternate'
-    });
     return orb;
   },
   addOrb: function addOrb(shape) {
@@ -88671,7 +88664,9 @@ AFRAME.registerComponent('chromastack', {
         continue;
       }
 
-      var currentOrbGeoType = orbs[i].getObject3D('mesh').geometry.metadata.type;
+      var currentOrbMeta = orbs[i].getObject3D('mesh').geometry.metadata;
+      if (!currentOrbMeta) return false;
+      var currentOrbGeoType = currentOrbMeta.type;
       var lastAdjacent = currentlyAdjacent[currentlyAdjacent.length - 1];
       var lastAdjacentGeoType = null;
 
@@ -88726,11 +88721,9 @@ AFRAME.registerComponent('chromastack', {
       this.removeMarkedObjects();
     }
 
-    var removeSound = document.querySelector('#remove-sound').components.sound;
+    var removeSound = document.querySelector('#remove-sound').components.sound; //if(!removeSound.isPlaying) {
 
-    if (!removeSound.isPlaying) {
-      removeSound.playSound();
-    }
+    removeSound.playSound(); //}
   },
   removeMarkedObjects: function removeMarkedObjects() {
     var toRemove = document.querySelectorAll('[matched]');
@@ -88872,6 +88865,7 @@ AFRAME.registerComponent('logic-controller', {
   _disableStartUI: function _disableStartUI() {
     var startButton = document.querySelector('#start-button');
     startButton.setAttribute('visible', false);
+    startButton.removeAttribute('data-clickable');
   },
   _initSounds: function _initSounds() {
     var moveSound = document.createElement('a-entity');
@@ -89002,12 +88996,8 @@ AFRAME.registerComponent('logic-controller', {
     var stacks = document.querySelectorAll('[chromastack]');
 
     for (var p = 0; p < stacks.length; p++) {
-      stacks[p].parentNode.removeChild(stacks[p]);
-    }
-
-    for (var i = 0; i < levelData.activeStacks.length; i++) {
-      var activeStack = levelData.activeStacks[i];
-      var portal = document.querySelector("#portal" + activeStack);
+      var portal = stacks[p].parentNode;
+      portal.removeChild(stacks[p]);
       portal.removeAttribute('animation__portalsUp');
       portal.setAttribute("material", {
         emissiveIntensity: 0.2
@@ -89019,9 +89009,9 @@ AFRAME.registerComponent('logic-controller', {
 
     var gameOverSound = document.querySelector('#game-over-sound');
     gameOverSound.components.sound.playSound();
-    var startHelpText = document.querySelector('#start-help-text');
-    document.querySelector('#game-start-button').setAttribute('data-clickable');
-    startHelpText.setAttribute('visible', true);
+    var gameStartButton = document.querySelector('#start-button');
+    gameStartButton.setAttribute('visible', true);
+    gameStartButton.setAttribute('data-clickable', {});
 
     this._engagePreset('starry');
   }
@@ -89148,6 +89138,7 @@ AFRAME.registerComponent('orb-picker', {
 AFRAME.registerComponent('orb', {
   init: function init() {
     this.el.addEventListener('animationcomplete', this.handleLower.bind(this));
+    this.state = this.el.sceneEl.systems.state.state;
   },
   handleLower: function handleLower(e) {
     switch (e.detail.name) {
@@ -89190,11 +89181,10 @@ AFRAME.registerComponent('portal', {
     this.el.addEventListener('animationbegin', function (e) {
       switch (e.detail.name) {
         case "animation__portalsUp":
-          var _portalsUpSound = document.querySelector("#portals-up-sound").components.sound;
+          var _portalsUpSound = document.querySelector("#portals-up-sound").components.sound; //if(!portalsUpSound.isPlaying) {
 
-          if (!_portalsUpSound.isPlaying) {
-            _portalsUpSound.playSound();
-          }
+          _portalsUpSound.playSound(); //}
+
 
           break;
       }
@@ -89219,7 +89209,15 @@ AFRAME.registerState({
       shapes: ['box', 'cone', 'sphere'],
       points: 0,
       preset: 'forest',
-      levelColor: '#1E8449',
+      maxHeight: 12,
+      timer: 3000
+    }, {
+      levelName: "Level 2",
+      stackCount: 4,
+      activeStacks: [1, 4, 7, 10],
+      shapes: ['box', 'cone', 'sphere'],
+      points: 500,
+      preset: 'egypt',
       maxHeight: 12,
       timer: 3000
     }]

@@ -35,8 +35,6 @@ AFRAME.registerComponent('chromastack', {
     orb.setAttribute('position', {x: 0, y: -0.6, z: 0});
 
     orb.setAttribute('material', referenceEntity.getAttribute('material'));
-    orb.setAttribute('animation__orbEmission', {property: 'material.emissiveIntensity', from: 0.7, to: 0.2, loop: true, dir: 'alternate'})
-
     return orb
   },
 
@@ -84,7 +82,11 @@ AFRAME.registerComponent('chromastack', {
         continue;
       }
 
-      let currentOrbGeoType     = orbs[i].getObject3D('mesh').geometry.metadata.type;
+
+      let currentOrbMeta        = orbs[i].getObject3D('mesh').geometry.metadata;
+      if(!currentOrbMeta) return false;
+      let currentOrbGeoType     = currentOrbMeta.type
+
       let lastAdjacent          = currentlyAdjacent[currentlyAdjacent.length - 1];
       let lastAdjacentGeoType   = null;
 
@@ -142,9 +144,9 @@ AFRAME.registerComponent('chromastack', {
     }
 
     const removeSound = document.querySelector('#remove-sound').components.sound;
-    if(!removeSound.isPlaying) {
+    //if(!removeSound.isPlaying) {
       removeSound.playSound();
-    }
+    //}
   },
 
   removeMarkedObjects: function() {

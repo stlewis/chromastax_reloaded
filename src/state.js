@@ -14,9 +14,20 @@ AFRAME.registerState({
         shapes: ['box', 'cone', 'sphere'],
         points: 0,
         preset: 'forest',
-        levelColor: '#1E8449',
         maxHeight: 12,
-        timer: 3000 } ]
+        timer: 3000 },
+
+      { levelName: "Level 2",
+        stackCount: 4,
+        activeStacks: [1, 4, 7, 10],
+        shapes: ['box', 'cone', 'sphere'],
+        points: 500,
+        preset: 'egypt',
+        maxHeight: 12,
+        timer: 3000 }
+
+    ]
+
 
   },
 

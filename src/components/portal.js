@@ -30,9 +30,9 @@ AFRAME.registerComponent('portal', {
       switch(e.detail.name) {
         case "animation__portalsUp":
           const  portalsUpSound = document.querySelector("#portals-up-sound").components.sound;
-          if(!portalsUpSound.isPlaying) {
+          //if(!portalsUpSound.isPlaying) {
             portalsUpSound.playSound();
-          }
+          //}
           break;
       }
 

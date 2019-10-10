@@ -29,6 +29,7 @@ AFRAME.registerComponent('logic-controller', {
   _disableStartUI: function() {
     const startButton = document.querySelector('#start-button')
     startButton.setAttribute('visible', false);
+    startButton.removeAttribute('data-clickable');
   },
 
   _initSounds: function() {
@@ -128,19 +129,11 @@ AFRAME.registerComponent('logic-controller', {
     const stacks = document.querySelectorAll('[chromastack]');
 
     for(let p = 0; p < stacks.length; p++) {
-        stacks[p].parentNode.removeChild(stacks[p])
-    }
-
-    for(let i = 0; i < levelData.activeStacks.length; i++){
-      const activeStack = levelData.activeStacks[i];
-
-      const portal = document.querySelector("#portal" + activeStack);
+      let portal = stacks[p].parentNode
+      portal.removeChild(stacks[p])
       portal.removeAttribute('animation__portalsUp');
-
       portal.setAttribute("material", { emissiveIntensity: 0.2 })
     }
-
-
   },
 
   endGame: function() {
@@ -149,10 +142,10 @@ AFRAME.registerComponent('logic-controller', {
     const gameOverSound = document.querySelector('#game-over-sound');
     gameOverSound.components.sound.playSound();
 
-    const startHelpText = document.querySelector('#start-help-text')
+    const gameStartButton = document.querySelector('#start-button')
 
-    document.querySelector('#game-start-button').setAttribute('data-clickable');
-    startHelpText.setAttribute('visible', true);
+    gameStartButton.setAttribute('visible', true);
+    gameStartButton.setAttribute('data-clickable', {});
 
     this._engagePreset('starry');
   }

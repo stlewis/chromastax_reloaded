@@ -1,9 +1,6 @@
 AFRAME.registerComponent('game-controls', {
 
   init: function() {
-
-      console.log(AFRAME.utils.device.isMobileVR())
-
     if (AFRAME.utils.device.isMobileVR()) {
       return this.attachLaser();
     }
@@ -16,7 +13,6 @@ AFRAME.registerComponent('game-controls', {
       return this.attachTouch();
     }
 
-    // Default case -- Web browser
     return this.attachCursor();
   },
 

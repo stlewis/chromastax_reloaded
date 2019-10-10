@@ -88759,8 +88759,6 @@ AFRAME.registerComponent('chromastack', {
 
 AFRAME.registerComponent('game-controls', {
   init: function init() {
-    console.log(AFRAME.utils.device.isMobileVR());
-
     if (AFRAME.utils.device.isMobileVR()) {
       return this.attachLaser();
     }
@@ -88771,8 +88769,7 @@ AFRAME.registerComponent('game-controls', {
 
     if (AFRAME.utils.device.isMobile()) {
       return this.attachTouch();
-    } // Default case -- Web browser
-
+    }
 
     return this.attachCursor();
   },

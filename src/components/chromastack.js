@@ -6,14 +6,13 @@ AFRAME.registerComponent('chromastack', {
   },
 
   init: function() {
-    this.state        = this.el.sceneEl.systems.state.state;
-    this.throttledAdd = AFRAME.utils.throttle(this.addOrb, this.data.sphereTimer, this)
-    this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this));
+    this.state            = this.el.sceneEl.systems.state.state;
+    this.throttledAdd     = AFRAME.utils.throttle(this.addOrb, this.data.sphereTimer, this)
+    this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this))
   },
 
   tick: function() {
-    this._removeAdjacentOrbs();
-    this.throttledAdd()
+    this.throttledAdd();
     this._calculateOrbPositions();
   },
 
@@ -66,98 +65,69 @@ AFRAME.registerComponent('chromastack', {
   },
 
   _removeAdjacentOrbs: function() {
-    let orbs = this.getOrbs();
-    console.log(orbs.length)
-    if(orbs.length <= 1) return false;
+    if(this.isRemoving === true) return true
+    this.isRemoving = true;
 
-    let currentlyAdjacent = [];
+    let orbs     = this.getOrbs();
+    let adjacent = []
 
     for(let i = 0; i < orbs.length; i++) {
-      let orb = orbs[i]
 
-      if(currentlyAdjacent.length == 0) {
-        currentlyAdjacent.push(orbs[i]);
-        continue;
+      if(adjacent.length === 0) {
+        adjacent.push(orbs[i])
       }
 
+      let currOrb  = orbs[i]
+      let prevOrb  = adjacent[adjacent.length - 1];
+      let prevMesh = prevOrb.components.orb.meshType();
+      let currMesh = currOrb.components.orb.meshType();
 
-      let currentOrbMeta        = orbs[i].getObject3D('mesh').geometry.metadata;
-      if(!currentOrbMeta) return false;
-      let currentOrbGeoType     = currentOrbMeta.type
+      if(prevMesh === currMesh) {
+        adjacent.push(orbs[i])
 
-      let lastAdjacent          = currentlyAdjacent[currentlyAdjacent.length - 1];
-      let lastAdjacentGeoType   = null;
+        if(adjacent.length >= 3) {
+          let idx4 = i + 1
+          let idx5 = i + 2
 
-      if(lastAdjacent){
-        lastAdjacentGeoType = lastAdjacent.getObject3D('mesh').geometry.metadata.type;
-      }
+          if(orbs[idx4] && orbs[idx4].components.orb.meshType() === orbs[i].components.orb.meshType()) {
+            adjacent.push(orbs[idx4])
 
-      if(currentOrbGeoType == lastAdjacentGeoType) {
-        currentlyAdjacent.push(orbs[i]);
+            if(orbs[idx5] && orbs[idx5].components.orb.meshType() === orbs[i].components.orb.meshType()) {
+              adjacent.push(orbs[idx5])
+            }
+          }
 
-        if(currentlyAdjacent.length >= 5) { // No longer than 5 at any event
-          this.removeObjects(currentlyAdjacent);
-          currentlyAdjacent = []
-          orbs = this.getOrbs();
+          this.removeObjects(adjacent)
+          adjacent = []
         }
 
-      }else{
-
-        if(currentlyAdjacent.length >= 3) {
-          this.removeObjects(currentlyAdjacent);
-          currentlyAdjacent = []
-        }
-
-        currentlyAdjacent.push(orbs[i])
-        orbs = this.getOrbs();
+      } else {
+        adjacent = [orbs[i]]
       }
-    }
 
-    if(currentlyAdjacent.length >= 3) {
-      this.removeObjects(currentlyAdjacent);
-      currentlyAdjacent = []
-      orbs = this.getOrbs();
     }
-
+    adjacent        = []
+    this.isRemoving = false;
   },
 
   removeObjects: function(objects){
-    if(objects.length == 0) return true;
-
+    console.log("How many times?", objects.map((o) => { return o.components.orb.meshType() }))
+    if(objects.length < 3) return true;
+    if(this.getOrbs().length < 3) return true
 
     for(let j = 0; j < objects.length; j++) {
       let orb = objects[j];
+      if(orb.getAttribute('matched')) continue;
       if(orb.parentNode) {
         orb.setAttribute('matched');
         orb.removeAttribute('data-clickable')
+        orb.setAttribute('animation__shrinkAway', {property: 'scale', to: {x: 0, y: 0, z: 0}, dur: 500 })
       }
     }
 
-    let orbs = this.getOrbs();
-
-
-    for(let a = 0; a < orbs.length; a++) {
-      const orb  = orbs[a];
-      const newY =  (0.54 * a) + 0.54
-      this.removeMarkedObjects();
-    }
-
+    this.el.sceneEl.emit('increaseScore', { objectCount: objects.length })
     const removeSound = document.querySelector('#remove-sound').components.sound;
-    //if(!removeSound.isPlaying) {
-      removeSound.playSound();
-    //}
-  },
-
-  removeMarkedObjects: function() {
-    const toRemove = document.querySelectorAll('[matched]');
-
-
-    for(let i = 0; i < toRemove.length; i++) {
-      const orb = toRemove[i];
-      orb.setAttribute('animation__shrinkAway', {property: 'scale', to: {x: 0, y: 0, z: 0}, dur: 500 })
-    }
-
-    this.el.sceneEl.emit('increaseScore', { objectCount: toRemove.length })
+    removeSound.playSound();
   },
 
   getOrbs: function() {

@@ -88592,8 +88592,6 @@ AFRAME.registerComponent('chromastack', {
     this.el.sceneEl.addEventListener('orbsSwapped', this.handleOrbSwap.bind(this));
   },
   tick: function tick() {
-    this._removeAdjacentOrbs();
-
     this.throttledAdd();
 
     this._calculateOrbPositions();
@@ -88652,98 +88650,78 @@ AFRAME.registerComponent('chromastack', {
     }
   },
   _removeAdjacentOrbs: function _removeAdjacentOrbs() {
+    if (this.isRemoving === true) return true;
+    this.isRemoving = true;
     var orbs = this.getOrbs();
-    console.log(orbs.length);
-    if (orbs.length <= 1) return false;
-    var currentlyAdjacent = [];
+    var adjacent = [];
 
     for (var i = 0; i < orbs.length; i++) {
-      var orb = orbs[i];
-
-      if (currentlyAdjacent.length == 0) {
-        currentlyAdjacent.push(orbs[i]);
-        continue;
+      if (adjacent.length === 0) {
+        adjacent.push(orbs[i]);
       }
 
-      var currentOrbMeta = orbs[i].getObject3D('mesh').geometry.metadata;
-      if (!currentOrbMeta) return false;
-      var currentOrbGeoType = currentOrbMeta.type;
-      var lastAdjacent = currentlyAdjacent[currentlyAdjacent.length - 1];
-      var lastAdjacentGeoType = null;
+      var currOrb = orbs[i];
+      var prevOrb = adjacent[adjacent.length - 1];
+      var prevMesh = prevOrb.components.orb.meshType();
+      var currMesh = currOrb.components.orb.meshType();
 
-      if (lastAdjacent) {
-        lastAdjacentGeoType = lastAdjacent.getObject3D('mesh').geometry.metadata.type;
-      }
+      if (prevMesh === currMesh) {
+        adjacent.push(orbs[i]);
 
-      if (currentOrbGeoType == lastAdjacentGeoType) {
-        currentlyAdjacent.push(orbs[i]);
+        if (adjacent.length >= 3) {
+          var idx4 = i + 1;
+          var idx5 = i + 2;
 
-        if (currentlyAdjacent.length >= 5) {
-          // No longer than 5 at any event
-          this.removeObjects(currentlyAdjacent);
-          currentlyAdjacent = [];
-          orbs = this.getOrbs();
+          if (orbs[idx4] && orbs[idx4].components.orb.meshType() === orbs[i].components.orb.meshType()) {
+            adjacent.push(orbs[idx4]);
+
+            if (orbs[idx5] && orbs[idx5].components.orb.meshType() === orbs[i].components.orb.meshType()) {
+              adjacent.push(orbs[idx5]);
+            }
+          }
+
+          this.removeObjects(adjacent);
+          adjacent = [];
         }
       } else {
-        if (currentlyAdjacent.length >= 3) {
-          this.removeObjects(currentlyAdjacent);
-          currentlyAdjacent = [];
-        }
-
-        currentlyAdjacent.push(orbs[i]);
-        orbs = this.getOrbs();
+        adjacent = [orbs[i]];
       }
     }
 
-    if (currentlyAdjacent.length >= 3) {
-      this.removeObjects(currentlyAdjacent);
-      currentlyAdjacent = [];
-      orbs = this.getOrbs();
-    }
+    adjacent = [];
+    this.isRemoving = false;
   },
   removeObjects: function removeObjects(objects) {
-    if (objects.length == 0) return true;
+    console.log("How many times?", objects.map(function (o) {
+      return o.components.orb.meshType();
+    }));
+    if (objects.length < 3) return true;
+    if (this.getOrbs().length < 3) return true;
 
     for (var j = 0; j < objects.length; j++) {
       var orb = objects[j];
+      if (orb.getAttribute('matched')) continue;
 
       if (orb.parentNode) {
         orb.setAttribute('matched');
         orb.removeAttribute('data-clickable');
+        orb.setAttribute('animation__shrinkAway', {
+          property: 'scale',
+          to: {
+            x: 0,
+            y: 0,
+            z: 0
+          },
+          dur: 500
+        });
       }
     }
 
-    var orbs = this.getOrbs();
-
-    for (var a = 0; a < orbs.length; a++) {
-      var _orb = orbs[a];
-      var newY = 0.54 * a + 0.54;
-      this.removeMarkedObjects();
-    }
-
-    var removeSound = document.querySelector('#remove-sound').components.sound; //if(!removeSound.isPlaying) {
-
-    removeSound.playSound(); //}
-  },
-  removeMarkedObjects: function removeMarkedObjects() {
-    var toRemove = document.querySelectorAll('[matched]');
-
-    for (var i = 0; i < toRemove.length; i++) {
-      var orb = toRemove[i];
-      orb.setAttribute('animation__shrinkAway', {
-        property: 'scale',
-        to: {
-          x: 0,
-          y: 0,
-          z: 0
-        },
-        dur: 500
-      });
-    }
-
     this.el.sceneEl.emit('increaseScore', {
-      objectCount: toRemove.length
+      objectCount: objects.length
     });
+    var removeSound = document.querySelector('#remove-sound').components.sound;
+    removeSound.playSound();
   },
   getOrbs: function getOrbs() {
     var orbs = Array.from(this.el.querySelectorAll('[orb]'));
@@ -89150,6 +89128,17 @@ AFRAME.registerComponent('orb', {
         this.el.parentNode.removeChild(this.el);
         break;
     }
+  },
+  meshType: function meshType() {
+    var mesh = this.el.getObject3D('mesh');
+    var geo = null;
+
+    if (mesh) {
+      geo = mesh.geometry;
+    }
+
+    if (geo && geo.metadata) return geo.metadata.type;
+    return null;
   }
 });
 
@@ -89211,39 +89200,22 @@ AFRAME.registerState({
     levels: [{
       levelName: "Level 1",
       stackCount: 3,
-      activeStacks: [1, 2, 12],
+      activeStacks: [2, 1, 12],
       shapes: available_primitives.slice(0, 3),
       points: 0,
       preset: 'forest',
-      maxHeight: 12,
-      timer: 3000
-    }, {
-      levelName: "Level 2",
-      stackCount: 4,
-      activeStacks: [1, 4, 7, 10],
-      shapes: available_primitives.slice(0, 3),
-      points: 500,
-      preset: 'egypt',
-      maxHeight: 12,
-      timer: 3000
-    }, {
-      levelName: "Level 3",
-      stackCount: 5,
-      activeStacks: [3, 2, 1, 12, 11],
-      shapes: available_primitives.slice(0, 4),
-      points: 2000,
-      preset: 'osiris',
       maxHeight: 12,
       timer: 3000
     }]
   },
   handlers: {
     increaseScore: function increaseScore(state, action) {
+      console.log("Increasing!", action);
+      if (action.objectCount > 5) console.log("Nooo!!!");
       var clearedCount = action.objectCount;
       var baseOrbValue = 10;
       var points = 0;
       var multiplier = 1;
-      console.log("Cleared", clearedCount);
       if (!clearedCount) return false;
       points += clearedCount * baseOrbValue;
 

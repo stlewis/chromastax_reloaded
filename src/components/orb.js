@@ -11,6 +11,18 @@ AFRAME.registerComponent('orb', {
         this.el.parentNode.removeChild(this.el)
         break;
     }
+  },
+
+  meshType: function() {
+    let mesh = this.el.getObject3D('mesh');
+    let geo  = null
+    if(mesh) {
+      geo = mesh.geometry
+    }
+
+    if(geo && geo.metadata) return geo.metadata.type
+
+    return null;
   }
 
 });

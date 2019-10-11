@@ -88653,6 +88653,7 @@ AFRAME.registerComponent('chromastack', {
   },
   _removeAdjacentOrbs: function _removeAdjacentOrbs() {
     var orbs = this.getOrbs();
+    console.log(orbs.length);
     if (orbs.length <= 1) return false;
     var currentlyAdjacent = [];
 
@@ -88680,14 +88681,15 @@ AFRAME.registerComponent('chromastack', {
         if (currentlyAdjacent.length >= 5) {
           // No longer than 5 at any event
           this.removeObjects(currentlyAdjacent);
+          currentlyAdjacent = [];
           orbs = this.getOrbs();
         }
       } else {
         if (currentlyAdjacent.length >= 3) {
           this.removeObjects(currentlyAdjacent);
+          currentlyAdjacent = [];
         }
 
-        currentlyAdjacent = [];
         currentlyAdjacent.push(orbs[i]);
         orbs = this.getOrbs();
       }
@@ -88695,14 +88697,12 @@ AFRAME.registerComponent('chromastack', {
 
     if (currentlyAdjacent.length >= 3) {
       this.removeObjects(currentlyAdjacent);
+      currentlyAdjacent = [];
       orbs = this.getOrbs();
     }
   },
   removeObjects: function removeObjects(objects) {
     if (objects.length == 0) return true;
-    this.el.sceneEl.emit('increaseScore', {
-      objectCount: objects.length
-    });
 
     for (var j = 0; j < objects.length; j++) {
       var orb = objects[j];
@@ -88740,6 +88740,10 @@ AFRAME.registerComponent('chromastack', {
         dur: 500
       });
     }
+
+    this.el.sceneEl.emit('increaseScore', {
+      objectCount: toRemove.length
+    });
   },
   getOrbs: function getOrbs() {
     var orbs = Array.from(this.el.querySelectorAll('[orb]'));
@@ -89195,9 +89199,11 @@ AFRAME.registerComponent('portal', {
 },{}],86:[function(require,module,exports){
 "use strict";
 
+var available_primitives = ['box', 'cone', 'sphere', 'octahedron', 'tetrahedron', 'dodecahedron', 'icosahedron'];
 AFRAME.registerState({
   nonBindedStateKeys: ['levels'],
   initialState: {
+    debug: true,
     score: 0,
     level: 0,
     levelData: {},
@@ -89206,7 +89212,7 @@ AFRAME.registerState({
       levelName: "Level 1",
       stackCount: 3,
       activeStacks: [1, 2, 12],
-      shapes: ['box', 'cone', 'sphere'],
+      shapes: available_primitives.slice(0, 3),
       points: 0,
       preset: 'forest',
       maxHeight: 12,
@@ -89215,9 +89221,18 @@ AFRAME.registerState({
       levelName: "Level 2",
       stackCount: 4,
       activeStacks: [1, 4, 7, 10],
-      shapes: ['box', 'cone', 'sphere'],
+      shapes: available_primitives.slice(0, 3),
       points: 500,
       preset: 'egypt',
+      maxHeight: 12,
+      timer: 3000
+    }, {
+      levelName: "Level 3",
+      stackCount: 5,
+      activeStacks: [3, 2, 1, 12, 11],
+      shapes: available_primitives.slice(0, 4),
+      points: 2000,
+      preset: 'osiris',
       maxHeight: 12,
       timer: 3000
     }]
@@ -89228,6 +89243,7 @@ AFRAME.registerState({
       var baseOrbValue = 10;
       var points = 0;
       var multiplier = 1;
+      console.log("Cleared", clearedCount);
       if (!clearedCount) return false;
       points += clearedCount * baseOrbValue;
 

@@ -24,9 +24,6 @@ AFRAME.registerComponent('chromastack', {
   createOrb: function(shape) {
     let referenceEntitySelector = '#' + shape + '-template'
     let referenceEntity = document.querySelector(referenceEntitySelector)
-
-
-
     const orb = document.createElement('a-entity');
     orb.setAttribute('class', 'orb ' + shape);
     orb.setAttribute('data-clickable', {});
@@ -70,6 +67,7 @@ AFRAME.registerComponent('chromastack', {
 
   _removeAdjacentOrbs: function() {
     let orbs = this.getOrbs();
+    console.log(orbs.length)
     if(orbs.length <= 1) return false;
 
     let currentlyAdjacent = [];
@@ -99,6 +97,7 @@ AFRAME.registerComponent('chromastack', {
 
         if(currentlyAdjacent.length >= 5) { // No longer than 5 at any event
           this.removeObjects(currentlyAdjacent);
+          currentlyAdjacent = []
           orbs = this.getOrbs();
         }
 
@@ -106,9 +105,9 @@ AFRAME.registerComponent('chromastack', {
 
         if(currentlyAdjacent.length >= 3) {
           this.removeObjects(currentlyAdjacent);
+          currentlyAdjacent = []
         }
 
-        currentlyAdjacent = []
         currentlyAdjacent.push(orbs[i])
         orbs = this.getOrbs();
       }
@@ -116,6 +115,7 @@ AFRAME.registerComponent('chromastack', {
 
     if(currentlyAdjacent.length >= 3) {
       this.removeObjects(currentlyAdjacent);
+      currentlyAdjacent = []
       orbs = this.getOrbs();
     }
 
@@ -124,7 +124,6 @@ AFRAME.registerComponent('chromastack', {
   removeObjects: function(objects){
     if(objects.length == 0) return true;
 
-    this.el.sceneEl.emit('increaseScore', { objectCount: objects.length })
 
     for(let j = 0; j < objects.length; j++) {
       let orb = objects[j];
@@ -152,10 +151,13 @@ AFRAME.registerComponent('chromastack', {
   removeMarkedObjects: function() {
     const toRemove = document.querySelectorAll('[matched]');
 
+
     for(let i = 0; i < toRemove.length; i++) {
       const orb = toRemove[i];
       orb.setAttribute('animation__shrinkAway', {property: 'scale', to: {x: 0, y: 0, z: 0}, dur: 500 })
     }
+
+    this.el.sceneEl.emit('increaseScore', { objectCount: toRemove.length })
   },
 
   getOrbs: function() {

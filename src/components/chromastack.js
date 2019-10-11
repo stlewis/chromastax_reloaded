@@ -45,6 +45,7 @@ AFRAME.registerComponent('chromastack', {
 
     let orb = this.createOrb(shape);
     this.el.prepend(orb);
+    this._removeAdjacentOrbs();
   },
 
   _calculateOrbPositions: function() {
@@ -65,8 +66,8 @@ AFRAME.registerComponent('chromastack', {
   },
 
   _removeAdjacentOrbs: function() {
-    if(this.isRemoving === true) return true
-    this.isRemoving = true;
+    //if(this.isRemoving === true) return true
+    //this.isRemoving = true;
 
     let orbs     = this.getOrbs();
     let adjacent = []
@@ -75,6 +76,7 @@ AFRAME.registerComponent('chromastack', {
 
       if(adjacent.length === 0) {
         adjacent.push(orbs[i])
+        continue;
       }
 
       let currOrb  = orbs[i]
@@ -107,17 +109,15 @@ AFRAME.registerComponent('chromastack', {
 
     }
     adjacent        = []
-    this.isRemoving = false;
+    //this.isRemoving = false;
   },
 
   removeObjects: function(objects){
-    console.log("How many times?", objects.map((o) => { return o.components.orb.meshType() }))
     if(objects.length < 3) return true;
-    if(this.getOrbs().length < 3) return true
+    if(objects.length > 5) return true;
 
     for(let j = 0; j < objects.length; j++) {
       let orb = objects[j];
-      if(orb.getAttribute('matched')) continue;
       if(orb.parentNode) {
         orb.setAttribute('matched');
         orb.removeAttribute('data-clickable')

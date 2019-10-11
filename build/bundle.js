@@ -88627,6 +88627,8 @@ AFRAME.registerComponent('chromastack', {
     shape = shape ? shape : validShapes[Math.floor(Math.random() * validShapes.length)];
     var orb = this.createOrb(shape);
     this.el.prepend(orb);
+
+    this._removeAdjacentOrbs();
   },
   _calculateOrbPositions: function _calculateOrbPositions() {
     var orbs = this.getOrbs(); // From bottom to top
@@ -88650,14 +88652,15 @@ AFRAME.registerComponent('chromastack', {
     }
   },
   _removeAdjacentOrbs: function _removeAdjacentOrbs() {
-    if (this.isRemoving === true) return true;
-    this.isRemoving = true;
+    //if(this.isRemoving === true) return true
+    //this.isRemoving = true;
     var orbs = this.getOrbs();
     var adjacent = [];
 
     for (var i = 0; i < orbs.length; i++) {
       if (adjacent.length === 0) {
         adjacent.push(orbs[i]);
+        continue;
       }
 
       var currOrb = orbs[i];
@@ -88688,19 +88691,14 @@ AFRAME.registerComponent('chromastack', {
       }
     }
 
-    adjacent = [];
-    this.isRemoving = false;
+    adjacent = []; //this.isRemoving = false;
   },
   removeObjects: function removeObjects(objects) {
-    console.log("How many times?", objects.map(function (o) {
-      return o.components.orb.meshType();
-    }));
     if (objects.length < 3) return true;
-    if (this.getOrbs().length < 3) return true;
+    if (objects.length > 5) return true;
 
     for (var j = 0; j < objects.length; j++) {
       var orb = objects[j];
-      if (orb.getAttribute('matched')) continue;
 
       if (orb.parentNode) {
         orb.setAttribute('matched');
@@ -89203,7 +89201,25 @@ AFRAME.registerState({
       activeStacks: [2, 1, 12],
       shapes: available_primitives.slice(0, 3),
       points: 0,
+      preset: 'default',
+      maxHeight: 12,
+      timer: 3000
+    }, {
+      levelName: "Level 2",
+      stackCount: 4,
+      activeStacks: [1, 4, 7, 10],
+      shapes: available_primitives.slice(0, 3),
+      points: 1000,
       preset: 'forest',
+      maxHeight: 12,
+      timer: 3000
+    }, {
+      levelName: "Level 3",
+      stackCount: 5,
+      activeStacks: [3, 2, 1, 12, 11],
+      shapes: available_primitives.slice(0, 4),
+      points: 5000,
+      preset: 'contact',
       maxHeight: 12,
       timer: 3000
     }]
@@ -89211,7 +89227,6 @@ AFRAME.registerState({
   handlers: {
     increaseScore: function increaseScore(state, action) {
       console.log("Increasing!", action);
-      if (action.objectCount > 5) console.log("Nooo!!!");
       var clearedCount = action.objectCount;
       var baseOrbValue = 10;
       var points = 0;

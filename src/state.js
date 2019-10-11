@@ -29,16 +29,25 @@ AFRAME.registerState({
         points: 1000,
         preset: 'forest',
         maxHeight: 12,
-        timer: 3000 },
+        timer: 5000 },
 
       { levelName: "Level 3",
         stackCount: 5,
         activeStacks: [3, 2, 1, 12, 11],
         shapes: available_primitives.slice(0, 4),
-        points: 5000,
+        points: 4000,
         preset: 'contact',
         maxHeight: 12,
-        timer: 3000 },
+        timer: 4000 },
+
+      { levelName: "Level 4",
+        stackCount: 6,
+        activeStacks: [1, 3, 5, 7, 9, 11],
+        shapes: available_primitives.slice(0, 5),
+        points: 6000,
+        preset: 'tron',
+        maxHeight: 12,
+        timer: 4000 },
     ]
 
 
@@ -47,7 +56,6 @@ AFRAME.registerState({
   handlers: {
 
     increaseScore: function(state, action) {
-      console.log("Increasing!", action)
 
       const clearedCount = action.objectCount;
       const baseOrbValue = 10;

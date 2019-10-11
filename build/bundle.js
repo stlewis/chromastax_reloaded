@@ -88595,6 +88595,8 @@ AFRAME.registerComponent('chromastack', {
     this.throttledAdd();
 
     this._calculateOrbPositions();
+
+    this._removeAdjacentOrbs();
   },
   handleOrbSwap: function handleOrbSwap() {
     this._removeAdjacentOrbs();
@@ -88627,8 +88629,6 @@ AFRAME.registerComponent('chromastack', {
     shape = shape ? shape : validShapes[Math.floor(Math.random() * validShapes.length)];
     var orb = this.createOrb(shape);
     this.el.prepend(orb);
-
-    this._removeAdjacentOrbs();
   },
   _calculateOrbPositions: function _calculateOrbPositions() {
     var orbs = this.getOrbs(); // From bottom to top
@@ -88696,11 +88696,16 @@ AFRAME.registerComponent('chromastack', {
   removeObjects: function removeObjects(objects) {
     if (objects.length < 3) return true;
     if (objects.length > 5) return true;
+    var removedCount = 0;
 
     for (var j = 0; j < objects.length; j++) {
       var orb = objects[j];
 
       if (orb.parentNode) {
+        if (orb.getAttribute('matched')) {
+          continue;
+        }
+
         orb.setAttribute('matched');
         orb.removeAttribute('data-clickable');
         orb.setAttribute('animation__shrinkAway', {
@@ -88712,14 +88717,17 @@ AFRAME.registerComponent('chromastack', {
           },
           dur: 500
         });
+        removedCount += 1;
       }
     }
 
-    this.el.sceneEl.emit('increaseScore', {
-      objectCount: objects.length
-    });
-    var removeSound = document.querySelector('#remove-sound').components.sound;
-    removeSound.playSound();
+    if (removedCount > 0) {
+      this.el.sceneEl.emit('increaseScore', {
+        objectCount: removedCount
+      });
+      var removeSound = document.querySelector('#remove-sound').components.sound;
+      removeSound.playSound();
+    }
   },
   getOrbs: function getOrbs() {
     var orbs = Array.from(this.el.querySelectorAll('[orb]'));
@@ -89005,6 +89013,13 @@ AFRAME.registerComponent('orb-picker', {
     this.firstOrb = null;
     this.secondOrb = null;
     this.el.addEventListener('click', this.handleOrbClick.bind(this));
+    this.el.sceneEl.addEventListener('levelChanged', this.clearSelections.bind(this));
+    this.el.sceneEl.addEventListener('gameOver', this.clearSelections.bind(this));
+  },
+  clearSelections: function clearSelections() {
+    this.firstOrb = null;
+    this.secondOrb = null;
+    this.clearBoundSphere();
   },
   handleOrbClick: function handleOrbClick(e) {
     var orb = e.detail.intersectedEl;
@@ -89099,6 +89114,12 @@ AFRAME.registerComponent('orb-picker', {
           radius: 0.28
         };
         break;
+
+      case "icosahedron":
+        boundingGeometry = {
+          primitive: orbGeometry.primitive,
+          radius: 0.28
+        };
     }
 
     boundingBox.setAttribute('geometry', boundingGeometry, true);
@@ -89212,21 +89233,29 @@ AFRAME.registerState({
       points: 1000,
       preset: 'forest',
       maxHeight: 12,
-      timer: 3000
+      timer: 5000
     }, {
       levelName: "Level 3",
       stackCount: 5,
       activeStacks: [3, 2, 1, 12, 11],
       shapes: available_primitives.slice(0, 4),
-      points: 5000,
+      points: 4000,
       preset: 'contact',
       maxHeight: 12,
-      timer: 3000
+      timer: 4000
+    }, {
+      levelName: "Level 4",
+      stackCount: 6,
+      activeStacks: [1, 3, 5, 7, 9, 11],
+      shapes: available_primitives.slice(0, 5),
+      points: 6000,
+      preset: 'tron',
+      maxHeight: 12,
+      timer: 4000
     }]
   },
   handlers: {
     increaseScore: function increaseScore(state, action) {
-      console.log("Increasing!", action);
       var clearedCount = action.objectCount;
       var baseOrbValue = 10;
       var points = 0;

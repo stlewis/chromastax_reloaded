@@ -5,6 +5,15 @@ AFRAME.registerComponent('orb-picker', {
     this.firstOrb  = null;
     this.secondOrb = null;
     this.el.addEventListener('click', this.handleOrbClick.bind(this))
+
+    this.el.sceneEl.addEventListener('levelChanged', this.clearSelections.bind(this));
+    this.el.sceneEl.addEventListener('gameOver', this.clearSelections.bind(this));
+  },
+
+  clearSelections: function() {
+    this.firstOrb = null;
+    this.secondOrb = null;
+    this.clearBoundSphere();
   },
 
   handleOrbClick: function(e) {
@@ -90,6 +99,8 @@ AFRAME.registerComponent('orb-picker', {
       case "dodecahedron":
         boundingGeometry = { primitive: orbGeometry.primitive, radius: 0.28 };
         break;
+      case "icosahedron":
+        boundingGeometry = { primitive: orbGeometry.primitive, radius: 0.28 };
     }
 
     boundingBox.setAttribute('geometry', boundingGeometry, true);

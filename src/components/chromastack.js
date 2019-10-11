@@ -14,6 +14,7 @@ AFRAME.registerComponent('chromastack', {
   tick: function() {
     this.throttledAdd();
     this._calculateOrbPositions();
+    this._removeAdjacentOrbs();
   },
 
   handleOrbSwap: function() {
@@ -45,7 +46,6 @@ AFRAME.registerComponent('chromastack', {
 
     let orb = this.createOrb(shape);
     this.el.prepend(orb);
-    this._removeAdjacentOrbs();
   },
 
   _calculateOrbPositions: function() {
@@ -116,18 +116,26 @@ AFRAME.registerComponent('chromastack', {
     if(objects.length < 3) return true;
     if(objects.length > 5) return true;
 
+    let removedCount = 0;
+
     for(let j = 0; j < objects.length; j++) {
       let orb = objects[j];
       if(orb.parentNode) {
+        if(orb.getAttribute('matched')) {
+          continue;
+        }
         orb.setAttribute('matched');
         orb.removeAttribute('data-clickable')
         orb.setAttribute('animation__shrinkAway', {property: 'scale', to: {x: 0, y: 0, z: 0}, dur: 500 })
+        removedCount += 1;
       }
     }
 
-    this.el.sceneEl.emit('increaseScore', { objectCount: objects.length })
-    const removeSound = document.querySelector('#remove-sound').components.sound;
-    removeSound.playSound();
+    if(removedCount > 0) {
+      this.el.sceneEl.emit('increaseScore', { objectCount: removedCount })
+      const removeSound = document.querySelector('#remove-sound').components.sound;
+      removeSound.playSound();
+    }
   },
 
   getOrbs: function() {

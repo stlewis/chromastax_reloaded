@@ -35,7 +35,7 @@ AFRAME.registerState({
         stackCount: 5,
         activeStacks: [3, 2, 1, 12, 11],
         shapes: available_primitives.slice(0, 4),
-        points: 4000,
+        points: 3000,
         preset: 'contact',
         maxHeight: 12,
         timer: 4000 },
@@ -44,10 +44,10 @@ AFRAME.registerState({
         stackCount: 6,
         activeStacks: [1, 3, 5, 7, 9, 11],
         shapes: available_primitives.slice(0, 5),
-        points: 6000,
+        points: 5000,
         preset: 'tron',
         maxHeight: 12,
-        timer: 4000 },
+        timer: 5000 },
     ]
 
 
